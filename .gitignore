@@ -1,0 +1,5 @@
+log/
+**/__pycache__
+*.pth
+run/
+my_yolo_dataset/
