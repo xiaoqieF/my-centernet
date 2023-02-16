@@ -59,9 +59,9 @@ if __name__ == '__main__':
     eval_dataloader = DataLoader(eval_data, batch_size=1, shuffle=False, num_workers=4, collate_fn=eval_data.collate_fn)
 
     init_lr = 0.02
-    warm_up_epochs = 5
-    freeze_epoch = 30
-    total_epoch = 120
+    warm_up_epochs = 10
+    freeze_epoch = 20
+    total_epoch = 130
 
     model.freeze_backbone()
 
