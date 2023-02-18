@@ -82,7 +82,7 @@ def compute_loss(pred, targets):
                 targets_reg[i, ct_int[1], ct_int[0]] = ct - ct_int
                 targets_reg_mask[i, ct_int[1], ct_int[0]] = 1
     
-    c_loss = focal_loss(hm, targets_hm)
+    c_loss = focal_loss(hm, targets_hm)  # 将 pred_hm 映射至 0 - 1, 对输出解码时也需先这样操作
     wh_loss = 0.1 * reg_l1_loss(wh, targets_wh, targets_reg_mask)
     off_loss = reg_l1_loss(offset, targets_reg, targets_reg_mask)
 

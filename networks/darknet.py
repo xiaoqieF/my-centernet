@@ -1,6 +1,7 @@
 import math
 from torch import nn
 from collections import OrderedDict
+import torch
 
 
 class ResidualBlock(nn.Module):
@@ -10,7 +11,7 @@ class ResidualBlock(nn.Module):
     """
     def __init__(self, in_channel, out_channels):
         super().__init__()
-        self.conv1 = nn.Conv2d(in_channel, out_channels[1], kernel_size=1, stride=1, padding=0, bias=False)
+        self.conv1 = nn.Conv2d(in_channel, out_channels[0], kernel_size=1, stride=1, padding=0, bias=False)
         self.bn1 = nn.BatchNorm2d(out_channels[0])
 
         self.conv2 = nn.Conv2d(out_channels[0], out_channels[1], kernel_size=3, stride=1, padding=1, bias=False)
@@ -69,7 +70,7 @@ class Darknet(nn.Module):
         out4 = self.layer4(out3)
         out5 = self.layer5(out4)
 
-        return out3, out4, out5
+        return out5
         
 
     def _make_layer(self, planes, blocks):
@@ -83,6 +84,9 @@ class Darknet(nn.Module):
             layers.append((f"residual_{i}", ResidualBlock(self.inplanes, planes)))
         return nn.Sequential(OrderedDict(layers))
 
-def darknet53():
+def darknet53(weight_path=""):
     model = Darknet([1, 2, 8, 8, 4])
+    if weight_path != "":
+        model.load_state_dict(torch.load(weight_path))
+    model.out_channels = 1024
     return model

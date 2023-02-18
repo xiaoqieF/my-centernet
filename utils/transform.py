@@ -78,6 +78,7 @@ class ToTensor(object):
     def __call__(self, data):
         img, boxes = data
         img = transforms.ToTensor()(img)
+        img = transforms.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225))(img)
         bb_targets = torch.zeros((len(boxes), 6))
         # bb_targets[:, 0] 填 boxes 的样本序号
         bb_targets[:, 1:] = transforms.ToTensor()(boxes)
@@ -114,7 +115,7 @@ class DefaultAug(ImgAug):
         self.augmentations = iaa.Sequential([
             iaa.Dropout([0.01, 0.1]),
             iaa.Sharpen((0.0, 0.1)),
-            # iaa.Affine(rotate=(-30, 30), translate_percent=(-0.1, 0.1), scale=(0.8, 1.5)),
+            iaa.Affine(rotate=(-20, 20), translate_percent=(-0.1, 0.1), scale=(0.8, 1.5)),
             iaa.AddToBrightness((-60, 40)),
             iaa.AddToHue((-60, 60)),
             iaa.Fliplr(0.5),
