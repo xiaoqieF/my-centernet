@@ -18,7 +18,7 @@ class BasicBlock(nn.Module):
         self.conv1 = nn.Conv2d(inplanes, planes, kernel_size=3, stride=stride, padding=1, bias=False)
         self.bn1 = nn.BatchNorm2d(planes)
         self.relu = nn.ReLU(inplace=True)
-        self.conv2 = nn.Conv2d(planes, planes, kernel_size=3, stride=stride, padding=1, bias=False)
+        self.conv2 = nn.Conv2d(planes, planes, kernel_size=3, stride=1, padding=1, bias=False)
         self.bn2 = nn.BatchNorm2d(planes)
         self.downsample = downsample
         self.stride = stride
@@ -255,3 +255,7 @@ class resnet50_Head(nn.Module):
         wh = self.wh_head(x)
         offset = self.reg_head(x)
         return hm, wh, offset
+
+if __name__ == '__main__':
+    net = resnet18()
+    print(net)

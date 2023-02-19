@@ -49,7 +49,7 @@ def warmup_lr_scheduler(optimizer, warmup_iters, warmup_factor):
     return optim.lr_scheduler.LambdaLR(optimizer, lr_lambda=f)
 
 if __name__ == '__main__':
-    model = centernet_resnet50(backbone_weight_path="resnet50.pth")
+    model = centernet_resnet18(backbone_weight_path="resnet18.pth")
     device = torch.device("cuda:0")
 
     train_data = CenterNetDataset('./my_yolo_dataset', isTrain=True, transform=DEFAULT_TRANSFORMS)
