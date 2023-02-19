@@ -38,11 +38,11 @@ if __name__ == "__main__":
     device = torch.device("cuda:0")
 
     model = centernet_darknet53()
-    model.load_state_dict(torch.load("./run/centernet_darknet129.pth"))
+    model.load_state_dict(torch.load("./run/centernet_darknet59.pth"))
     model.to(device)
     model.eval()
 
-    dataset = CenterNetDataset('./my_yolo_dataset', isTrain=True, transform=VAL_TRANSFORMS)
+    dataset = CenterNetDataset('./my_yolo_dataset', isTrain=False, transform=VAL_TRANSFORMS)
     dataloader = DataLoader(dataset, batch_size=1, shuffle=False, num_workers=4, collate_fn=dataset.collate_fn)
 
     evaluate(model, dataloader, device, plot=True)

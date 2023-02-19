@@ -3,3 +3,4 @@ log/
 *.pth
 run/
 my_yolo_dataset/
+data/

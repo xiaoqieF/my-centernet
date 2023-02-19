@@ -2,6 +2,45 @@ import torch
 from torch import nn
 from torchvision.models.detection.backbone_utils import BackboneWithFPN
 
+model_urls = {
+    'resnet18': 'https://download.pytorch.org/models/resnet18-5c106cde.pth',
+    'resnet34': 'https://download.pytorch.org/models/resnet34-333f7ec4.pth',
+    'resnet50': 'https://download.pytorch.org/models/resnet50-19c8e357.pth',
+    'resnet101': 'https://download.pytorch.org/models/resnet101-5d3b4d8f.pth',
+    'resnet152': 'https://download.pytorch.org/models/resnet152-b121ed2d.pth',
+}
+
+class BasicBlock(nn.Module):
+    expansion = 1
+
+    def __init__(self, inplanes, planes, stride=1, downsample=None):
+        super(BasicBlock, self).__init__()
+        self.conv1 = nn.Conv2d(inplanes, planes, kernel_size=3, stride=stride, padding=1, bias=False)
+        self.bn1 = nn.BatchNorm2d(planes)
+        self.relu = nn.ReLU(inplace=True)
+        self.conv2 = nn.Conv2d(planes, planes, kernel_size=3, stride=stride, padding=1, bias=False)
+        self.bn2 = nn.BatchNorm2d(planes)
+        self.downsample = downsample
+        self.stride = stride
+
+    def forward(self, x):
+        identity = x
+
+        out = self.conv1(x)
+        out = self.bn1(out)
+        out = self.relu(out)
+
+        out = self.conv2(out)
+        out = self.bn2(out)
+
+        if self.downsample is not None:
+            identity = self.downsample(x)
+
+        out += identity
+        out = self.relu(out)
+
+        return out
+
 class Bottleneck(nn.Module):
     expansion = 4
     def __init__(self, in_channels, out_channels, stride=1, downsample=None):
@@ -105,6 +144,26 @@ class ResNet(nn.Module):
             x = self.fc(x)
         return x
 
+def resnet18(weight_path=""):
+    #  'resnet18': 'https://download.pytorch.org/models/resnet18-5c106cde.pth'
+    resnet_backbone = ResNet(BasicBlock, [2, 2, 2, 2], include_top=False)
+
+    if weight_path != "":
+        print(resnet_backbone.load_state_dict(torch.load(weight_path), strict=False))
+    resnet_backbone.out_channels = 512
+
+    return resnet_backbone
+
+def resnet34(weight_path=""):
+    # 'resnet34': 'https://download.pytorch.org/models/resnet34-333f7ec4.pth'
+    resnet_backbone = ResNet(BasicBlock, [3, 4, 6, 3], include_top=False)
+
+    if weight_path != "":
+        print(resnet_backbone.load_state_dict(torch.load(weight_path), strict=False))
+    resnet_backbone.out_channels = 512
+
+    return resnet_backbone
+
 def resnet50(weight_path=""):
     # 'resnet50': 'https://s3.amazonaws.com/pytorch/models/resnet50-19c8e357.pth'
     resnet_backbone = ResNet(Bottleneck, [3, 4, 6, 3], include_top=False)
@@ -138,23 +197,9 @@ class resnet50_Decoder(nn.Module):
         for i in range(num_layers):
             kernel = num_kernels[i]
             planes = num_filters[i]
-
-            layers.append(
-                nn.Conv2d(
-                    in_channels=self.inplanes,
-                    out_channels=planes,
-                    kernel_size=3,
-                    stride=1,
-                    padding=1,
-                )
-            )
-
-            layers.append(nn.BatchNorm2d(planes, momentum=self.bn_momentum))
-            layers.append(nn.ReLU(inplace=True))
-
             layers.append(
                 nn.ConvTranspose2d(
-                    in_channels=planes,
+                    in_channels=self.inplanes,
                     out_channels=planes,
                     kernel_size=kernel,
                     stride=2,

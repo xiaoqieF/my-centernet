@@ -3,7 +3,7 @@ from torch import optim
 from torch.utils.data import DataLoader
 from torch.utils.tensorboard import SummaryWriter
 import os
-from networks.centernet import centernet_resnet50, centernet_darknet53
+from networks.centernet import centernet_resnet50, centernet_resnet18
 from utils.dataset import CenterNetDataset
 from utils.transform import DEFAULT_TRANSFORMS, VAL_TRANSFORMS
 from utils.loss import compute_loss
@@ -33,7 +33,7 @@ def train_one_epoch(model, epoch, train_loader, optimizer, device):
 
         if (i + 1) % 50 == 0:
             print(f"Train epoch[{epoch}]: [{i}/{len(train_loader)}], total loss: {loss.item()} lr:{get_lr(optimizer):.5}")
-    torch.save(model.state_dict(), f"./run/centernet_darknet{str(epoch)}.pth")
+    torch.save(model.state_dict(), f"./run/centernet_resnet{str(epoch)}.pth")
     writer.add_scalar("train loss", total_loss / len(train_loader), epoch)
     writer.add_scalar("lr", get_lr(optimizer), epoch)
 
@@ -49,36 +49,38 @@ def warmup_lr_scheduler(optimizer, warmup_iters, warmup_factor):
     return optim.lr_scheduler.LambdaLR(optimizer, lr_lambda=f)
 
 if __name__ == '__main__':
-    model = centernet_darknet53(backbone_weight_path="darknet53.pth")
+    model = centernet_resnet50(backbone_weight_path="resnet50.pth")
     device = torch.device("cuda:0")
 
     train_data = CenterNetDataset('./my_yolo_dataset', isTrain=True, transform=DEFAULT_TRANSFORMS)
-    train_dataloader = DataLoader(train_data, batch_size=16, shuffle=True, num_workers=4, collate_fn=train_data.collate_fn)
+    train_dataloader = DataLoader(train_data, batch_size=16, shuffle=True, num_workers=8, collate_fn=train_data.collate_fn)
 
     eval_data = CenterNetDataset('./my_yolo_dataset', isTrain=False, transform=VAL_TRANSFORMS)
-    eval_dataloader = DataLoader(eval_data, batch_size=1, shuffle=False, num_workers=4, collate_fn=eval_data.collate_fn)
+    eval_dataloader = DataLoader(eval_data, batch_size=1, shuffle=False, num_workers=8, collate_fn=eval_data.collate_fn)
 
-    init_lr = 0.02
+    init_lr = 0.01
     warm_up_epochs = 5
-    freeze_epoch = 20
-    total_epoch = 130
+    freeze_epoch = 30
+    total_epoch = 100
 
     model.freeze_backbone()
 
     params = [p for p in model.parameters() if p.requires_grad]
-    optimizer = torch.optim.SGD(params, lr=init_lr, momentum=0.9, weight_decay=0.0005)
+    optimizer = torch.optim.SGD(params, lr=init_lr, momentum=0.9, weight_decay=0.0001)
     lr_scheduler = warmup_lr_scheduler(optimizer, warm_up_epochs, 0.01)
 
     for epoch in range(freeze_epoch):
         train_one_epoch(model, epoch, train_dataloader, optimizer, device)
         lr_scheduler.step()
-        ap = evaluate(model, eval_dataloader, device, plot=False)
-        writer.add_scalar('mAP50', ap[:, 0].mean(), epoch)
+
+        if epoch % 3 == 0:
+            ap = evaluate(model, eval_dataloader, device, plot=False)
+            writer.add_scalar('mAP50', ap[:, 0].mean(), epoch)
 
     model.unfreeze_backbone()
     
     params = [p for p in model.parameters() if p.requires_grad]
-    optimizer = torch.optim.SGD(params, lr=init_lr * 0.05, momentum=0.9, weight_decay=0.0005)
+    optimizer = torch.optim.SGD(params, lr=init_lr * 0.05, momentum=0.9, weight_decay=0.0001)
     lr_scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, total_epoch - freeze_epoch)
 
     for epoch in range(freeze_epoch, total_epoch, 1):

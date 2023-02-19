@@ -1,7 +1,9 @@
 import torch.nn as nn
-from .resnet import resnet50, resnet50_Decoder, resnet50_Head
+from .resnet import resnet50, resnet18, resnet50_Decoder, resnet50_Head
 from .darknet import darknet53
-import math
+import torch.nn.functional as F
+import torch
+
 
 class CenterNet(nn.Module):
     def __init__(self, num_classes, backbone):
@@ -40,6 +42,9 @@ def centernet_resnet50(num_classes=20, backbone_weight_path=""):
 
 def centernet_darknet53(num_classes=20, backbone_weight_path=""):
     return CenterNet(num_classes=num_classes, backbone=darknet53(weight_path=backbone_weight_path))
+
+def centernet_resnet18(num_classes=20, backbone_weight_path=""):
+    return CenterNet(num_classes=num_classes, backbone=resnet18(weight_path=backbone_weight_path))
 
 if __name__ == '__main__':
     import torch
