@@ -1,4 +1,4 @@
-from networks.centernet import centernet_darknet53
+from networks.centernet import centernet_resnet18
 from utils.dataset import CenterNetDataset
 from utils.boxes import decode_bbox, postprocess
 from torch.utils.data import DataLoader
@@ -11,14 +11,14 @@ import matplotlib.pyplot as plt
 
 if __name__ == '__main__':
     device = torch.device("cuda:0")
-    model = centernet_darknet53()
-    model.load_state_dict(torch.load("./run/centernet_darknet58.pth"))
+    model = centernet_resnet18(num_classes=1)
+    model.load_state_dict(torch.load("./run/centernet_resnet18_99.pth"))
     model.to(device)
     model.eval()
 
-    data = CenterNetDataset("./my_yolo_dataset", isTrain=False, transform=VAL_TRANSFORMS)
+    data = CenterNetDataset("./DroneYoloDataset", isTrain=False, transform=VAL_TRANSFORMS)
     dataloader = DataLoader(data, batch_size=1, shuffle=False, num_workers=4, collate_fn=data.collate_fn)
-    class_names = load_class_names("./my_yolo_dataset/my_data_label.names")
+    class_names = load_class_names("./DroneYoloDataset/my_data_label.names")
 
     with torch.no_grad():
         for imgs, targets in dataloader:

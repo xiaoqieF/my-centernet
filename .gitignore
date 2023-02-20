@@ -4,3 +4,5 @@ log/
 run/
 my_yolo_dataset/
 data/
+DroneYoloDataset/
+samples/

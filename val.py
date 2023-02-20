@@ -1,7 +1,7 @@
 from utils.metrics import *
 import torch
 from torch.utils.data import DataLoader
-from networks.centernet import centernet_resnet50, centernet_darknet53
+from networks.centernet import centernet_resnet18
 from utils.dataset import CenterNetDataset
 from utils.transform import VAL_TRANSFORMS
 from utils.hyp import HYP
@@ -12,7 +12,7 @@ import tqdm
 def evaluate(model, dataloader, device, plot=False):
     model.to(device)
     model.eval()
-    class_names = load_class_names("./my_yolo_dataset/my_data_label.names")
+    class_names = load_class_names("./DroneYoloDataset/my_data_label.names")
 
     stats = []
     for imgs, targets in tqdm.tqdm(dataloader, desc="Validating"):
@@ -37,12 +37,12 @@ def evaluate(model, dataloader, device, plot=False):
 if __name__ == "__main__":
     device = torch.device("cuda:0")
 
-    model = centernet_darknet53()
-    model.load_state_dict(torch.load("./run/centernet_darknet59.pth"))
+    model = centernet_resnet18(num_classes=1)
+    model.load_state_dict(torch.load("./run/centernet_resnet18_99.pth"))
     model.to(device)
     model.eval()
 
-    dataset = CenterNetDataset('./my_yolo_dataset', isTrain=False, transform=VAL_TRANSFORMS)
+    dataset = CenterNetDataset('./DroneYoloDataset', isTrain=False, transform=VAL_TRANSFORMS)
     dataloader = DataLoader(dataset, batch_size=1, shuffle=False, num_workers=4, collate_fn=dataset.collate_fn)
 
     evaluate(model, dataloader, device, plot=True)

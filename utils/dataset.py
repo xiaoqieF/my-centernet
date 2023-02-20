@@ -57,7 +57,7 @@ if __name__ == '__main__':
     from draw_boxes_utils import draw_objs
     import matplotlib.pyplot as plt
 
-    data = CenterNetDataset('./my_yolo_dataset', isTrain=True, transform=DEFAULT_TRANSFORMS)
+    data = CenterNetDataset('./DroneYoloDataset', isTrain=True, transform=DEFAULT_TRANSFORMS)
     dataloader = DataLoader(data, 4, False, num_workers=4, collate_fn=data.collate_fn)
 
     for img, target in data:
