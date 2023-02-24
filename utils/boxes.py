@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 import torchvision
+import numpy as np
 
 def pool_nms(heat, kernel = 3):
     pad = (kernel - 1) // 2
@@ -98,3 +99,27 @@ def postprocess(predictions, nms_thres=0.4):
             output[i] = torch.cat((output[i], detection.cpu()))
         
     return output
+
+def correct_boxes(boxes, input_shape, image_shape):
+    # relative box [x1, y1, x2, y2]
+    boxes[:, [0, 2]] /= input_shape[0]    # / w
+    boxes[:, [1, 3]] /= input_shape[1]    # / h
+
+    boxes_xy, boxes_wh = (boxes[:, 0:2] + boxes[:, 2:4]) / 2, (boxes[:, 2:4] - boxes[:, 0:2])
+    boxes_yx, boxes_hw = boxes_xy[:, ::-1], boxes_wh[:, ::-1]
+    input_shape = np.array(input_shape)
+    image_shape = np.array(image_shape[::-1])  # change to [h, w]
+
+    new_shape = np.round(image_shape * np.min(input_shape / image_shape))
+    offset = (input_shape - new_shape) / 2. / input_shape
+    scale = input_shape / new_shape
+
+    boxes_yx = (boxes_yx - offset) * scale
+    boxes_hw *= scale
+
+    boxes_min = boxes_yx - (boxes_hw / 2.)
+    boxes_max = boxes_yx + (boxes_hw / 2.)
+    boxes = np.concatenate([boxes_min[..., 1:2], boxes_min[..., 0:1], boxes_max[..., 1:2], boxes_max[..., 0:1]], axis=-1)
+    boxes[:, [0, 2]] *= image_shape[1]
+    boxes[:, [1, 3]] *= image_shape[0]
+    return boxes

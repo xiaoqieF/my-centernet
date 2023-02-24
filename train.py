@@ -3,7 +3,8 @@ from torch import optim
 from torch.utils.data import DataLoader
 from torch.utils.tensorboard import SummaryWriter
 import os
-from networks.centernet import centernet_resnet50, centernet_resnet18
+from networks.centernet import centernet_resnet50, centernet_resnet18, centernet_darknet53, centernet_yolos
+from networks.centernetplus import CenterNetPlus
 from utils.dataset import CenterNetDataset
 from utils.transform import DEFAULT_TRANSFORMS, VAL_TRANSFORMS
 from utils.loss import compute_loss
@@ -33,7 +34,7 @@ def train_one_epoch(model, epoch, train_loader, optimizer, device):
 
         if (i + 1) % 50 == 0:
             print(f"Train epoch[{epoch}]: [{i}/{len(train_loader)}], total loss: {loss.item()} lr:{get_lr(optimizer):.5}")
-    torch.save(model.state_dict(), f"./run/centernet_resnet18_{str(epoch)}.pth")
+    torch.save(model.state_dict(), f"./run/centernet_yolos_{str(epoch)}.pth")
     writer.add_scalar("train loss", total_loss / len(train_loader), epoch)
     writer.add_scalar("lr", get_lr(optimizer), epoch)
 
@@ -49,13 +50,13 @@ def warmup_lr_scheduler(optimizer, warmup_iters, warmup_factor):
     return optim.lr_scheduler.LambdaLR(optimizer, lr_lambda=f)
 
 if __name__ == '__main__':
-    model = centernet_resnet18(num_classes=1, backbone_weight_path="resnet18.pth")
+    model = centernet_yolos(num_classes=2, pretrained=True)
     device = torch.device("cuda:0")
 
-    train_data = CenterNetDataset('./DroneYoloDataset', isTrain=True, transform=DEFAULT_TRANSFORMS)
+    train_data = CenterNetDataset('./DroneBirds', isTrain=True, transform=DEFAULT_TRANSFORMS)
     train_dataloader = DataLoader(train_data, batch_size=16, shuffle=True, num_workers=6, collate_fn=train_data.collate_fn)
 
-    eval_data = CenterNetDataset('./DroneYoloDataset', isTrain=False, transform=VAL_TRANSFORMS)
+    eval_data = CenterNetDataset('./DroneBirds', isTrain=False, transform=VAL_TRANSFORMS)
     eval_dataloader = DataLoader(eval_data, batch_size=1, shuffle=False, num_workers=6, collate_fn=eval_data.collate_fn)
 
     init_lr = 0.01
@@ -63,10 +64,10 @@ if __name__ == '__main__':
     freeze_epoch = 30
     total_epoch = 100
 
-    model.freeze_backbone()
+    # model.freeze_backbone()
 
     params = [p for p in model.parameters() if p.requires_grad]
-    optimizer = torch.optim.SGD(params, lr=init_lr, momentum=0.9, weight_decay=0.0001)
+    optimizer = torch.optim.SGD(params, lr=init_lr, momentum=0.9, weight_decay=0.0005)
     lr_scheduler = warmup_lr_scheduler(optimizer, warm_up_epochs, 0.01)
 
     for epoch in range(freeze_epoch):
@@ -77,10 +78,10 @@ if __name__ == '__main__':
             ap = evaluate(model, eval_dataloader, device, plot=False)
             writer.add_scalar('mAP50', ap[:, 0].mean(), epoch)
 
-    model.unfreeze_backbone()
+    # model.unfreeze_backbone()
     
     params = [p for p in model.parameters() if p.requires_grad]
-    optimizer = torch.optim.SGD(params, lr=init_lr * 0.05, momentum=0.9, weight_decay=0.0001)
+    optimizer = torch.optim.SGD(params, lr=init_lr * 0.05, momentum=0.9, weight_decay=0.0005)
     lr_scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, total_epoch - freeze_epoch)
 
     for epoch in range(freeze_epoch, total_epoch, 1):

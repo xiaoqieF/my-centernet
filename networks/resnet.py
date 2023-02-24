@@ -87,10 +87,9 @@ class Bottleneck(nn.Module):
         return out
 
 class ResNet(nn.Module):
-    def __init__(self, block, blocks_num, num_classes=1000, include_top=True):
+    def __init__(self, block, blocks_num):
         super().__init__()
         self.in_channels = 64
-        self.include_top = include_top
 
         self.conv1 = nn.Conv2d(3, self.in_channels, kernel_size=7, stride=2, padding=3, bias=False)
         self.bn1 = nn.BatchNorm2d(self.in_channels)
@@ -101,10 +100,6 @@ class ResNet(nn.Module):
         self.layer2 = self._make_layer(block, 128, blocks_num[1], stride=2)
         self.layer3 = self._make_layer(block, 256, blocks_num[2], stride=2)
         self.layer4 = self._make_layer(block, 512, blocks_num[3], stride=2)
-
-        if self.include_top:
-            self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
-            self.fc = nn.Linear(512 * block.expansion, num_classes)
 
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
@@ -128,25 +123,21 @@ class ResNet(nn.Module):
         return nn.Sequential(*layers)
 
     def forward(self, x):
-        x = self.conv1(x)
-        x = self.bn1(x)
-        x = self.relu(x)
-        x = self.maxpool(x)
+        C_1 = self.conv1(x)
+        C_1 = self.bn1(C_1)
+        C_1 = self.relu(C_1)
+        C_1 = self.maxpool(C_1)
 
-        x = self.layer1(x)
-        x = self.layer2(x)
-        x = self.layer3(x)
-        x = self.layer4(x)
+        C_2 = self.layer1(C_1)
+        C_3 = self.layer2(C_2)
+        C_4 = self.layer3(C_3)
+        C_5 = self.layer4(C_4)
 
-        if self.include_top:
-            x = self.avgpool(x)
-            x = torch.flatten(x, 1)
-            x = self.fc(x)
-        return x
+        return C_2, C_3, C_4, C_5
 
 def resnet18(weight_path=""):
     #  'resnet18': 'https://download.pytorch.org/models/resnet18-5c106cde.pth'
-    resnet_backbone = ResNet(BasicBlock, [2, 2, 2, 2], include_top=False)
+    resnet_backbone = ResNet(BasicBlock, [2, 2, 2, 2])
 
     if weight_path != "":
         print(resnet_backbone.load_state_dict(torch.load(weight_path), strict=False))
@@ -156,7 +147,7 @@ def resnet18(weight_path=""):
 
 def resnet34(weight_path=""):
     # 'resnet34': 'https://download.pytorch.org/models/resnet34-333f7ec4.pth'
-    resnet_backbone = ResNet(BasicBlock, [3, 4, 6, 3], include_top=False)
+    resnet_backbone = ResNet(BasicBlock, [3, 4, 6, 3])
 
     if weight_path != "":
         print(resnet_backbone.load_state_dict(torch.load(weight_path), strict=False))
@@ -166,7 +157,7 @@ def resnet34(weight_path=""):
 
 def resnet50(weight_path=""):
     # 'resnet50': 'https://s3.amazonaws.com/pytorch/models/resnet50-19c8e357.pth'
-    resnet_backbone = ResNet(Bottleneck, [3, 4, 6, 3], include_top=False)
+    resnet_backbone = ResNet(Bottleneck, [3, 4, 6, 3])
 
     if weight_path != "":
         print(resnet_backbone.load_state_dict(torch.load(weight_path), strict=False))

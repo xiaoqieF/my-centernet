@@ -1,5 +1,6 @@
 import torch.nn as nn
 from .resnet import resnet50, resnet18, resnet50_Decoder, resnet50_Head
+from .CSPDarknet import CSPDarknet
 from .darknet import darknet53
 import torch.nn.functional as F
 import torch
@@ -34,7 +35,7 @@ class CenterNet(nn.Module):
         self.head.cls_head[-1].bias.data.fill_(-2.19)
         
     def forward(self, x):
-        feat = self.backbone(x)
+        _1, _2, _3, feat = self.backbone(x)
         return self.head(self.decoder(feat))
 
 def centernet_resnet50(num_classes=20, backbone_weight_path=""):
@@ -45,6 +46,21 @@ def centernet_darknet53(num_classes=20, backbone_weight_path=""):
 
 def centernet_resnet18(num_classes=20, backbone_weight_path=""):
     return CenterNet(num_classes=num_classes, backbone=resnet18(weight_path=backbone_weight_path))
+
+def centernet_yolos(num_classes=20, pretrained=True):
+    depth_dict          = {'n': 0.33, 's' : 0.33, 'm' : 0.67, 'l' : 1.00, 'x' : 1.33,}
+    width_dict          = {'n': 0.25, 's' : 0.50, 'm' : 0.75, 'l' : 1.00, 'x' : 1.25,}
+    dep_mul, wid_mul    = depth_dict['s'], width_dict['s']
+
+    base_channels       = int(wid_mul * 64)  # 64
+    base_depth          = max(round(dep_mul * 3), 1)  # 3
+    #-----------------------------------------------#
+    #   输入图片是640, 640, 3
+    #   初始的基本通道是64
+    #-----------------------------------------------#
+    backbone       = CSPDarknet(base_channels, base_depth, 's', pretrained=pretrained)
+    backbone.out_channels = 512
+    return CenterNet(num_classes=num_classes, backbone=backbone)
 
 if __name__ == '__main__':
     import torch

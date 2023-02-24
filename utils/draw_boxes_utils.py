@@ -79,7 +79,7 @@ def draw_text(draw, box_to_display_str_map, box, left, right, top, bottom, color
         text_bottom -= text_height - 2 * margin
 
 
-def draw_box(image, boxes, classes, scores, category_index, thresh=0.1, line_thickness=3):
+def draw_box(image, boxes, classes, scores, category_index, thresh=0.01, line_thickness=3):
     box_to_display_str_map = collections.defaultdict(list)
     box_to_color_map = collections.defaultdict(str)
 
