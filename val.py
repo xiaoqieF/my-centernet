@@ -2,6 +2,7 @@ from utils.metrics import *
 import torch
 from torch.utils.data import DataLoader
 from networks.centernet import centernet_resnet18, centernet_darknet53, centernet_resnet50
+from networks.centernetplus import CenterNetPlus
 from utils.dataset import CenterNetDataset
 from utils.transform import VAL_TRANSFORMS
 from utils.hyp import HYP
@@ -38,8 +39,8 @@ def evaluate(model, dataloader, device, plot=False):
 if __name__ == "__main__":
     device = torch.device("cuda:0")
 
-    model = centernet_darknet53(num_classes=2)
-    model.load_state_dict(torch.load("./run/centernet_darknet53_99.pth"))
+    model = CenterNetPlus(num_classes=2)
+    model.load_state_dict(torch.load("./run/centernet_yolos_54.pth"))
     model.to(device)
     model.eval()
 

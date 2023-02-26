@@ -1,4 +1,5 @@
 from networks.centernet import centernet_resnet18, centernet_darknet53
+from networks.centernetplus import CenterNetPlus
 from utils.dataset import CenterNetDataset
 from utils.boxes import decode_bbox, postprocess
 from torch.utils.data import DataLoader
@@ -11,8 +12,8 @@ import matplotlib.pyplot as plt
 
 if __name__ == '__main__':
     device = torch.device("cuda:0")
-    model = centernet_darknet53(num_classes=2)
-    model.load_state_dict(torch.load("./run/centernet_darknet53_99.pth"))
+    model = CenterNetPlus(num_classes=2, backbone="r18")
+    model.load_state_dict(torch.load("./run/centernet_yolos_54.pth"))
     model.to(device)
     model.eval()
 

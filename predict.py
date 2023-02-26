@@ -8,13 +8,14 @@ import cv2
 import numpy as np
 
 from networks.centernet import centernet_resnet18, centernet_darknet53
+from networks.centernetplus import CenterNetPlus
 from utils.boxes import decode_bbox, postprocess, correct_boxes
 from utils.draw_boxes_utils import draw_box
 from utils.utils import load_class_names
 
 imgs_path = "./samples/imgs"
 video_path = "./samples/droneFly.mp4"
-mode = "image"    # image / video
+mode = "video"    # image / video
 
 #---------------------------------------------------#
 #   对输入图像进行resize
@@ -37,8 +38,8 @@ def resize_image(image, size, letterbox_image):
 if __name__ == '__main__':
     class_names = load_class_names("./DroneBirds/my_data_label.names")
     device = torch.device("cuda:0")
-    model = centernet_resnet18(num_classes=2)
-    model.load_state_dict(torch.load("./run/centernet_resnet18_63.pth"))
+    model = CenterNetPlus(num_classes=2)
+    model.load_state_dict(torch.load("./run/centernet_yolos_54.pth"))
     model.to(device)
     model.eval()
 
@@ -62,8 +63,8 @@ if __name__ == '__main__':
                 # print(f"predictions: {output}")
 
                 img = draw_box(img_origin, output[:, :4], output[:, -1], output[:, 4], class_names)
-                # plt.imshow(img)
-                # plt.show()
+                plt.imshow(img)
+                plt.show()
     elif mode == "video":
         cap = cv2.VideoCapture(video_path)
         size    = (int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)), int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT)))

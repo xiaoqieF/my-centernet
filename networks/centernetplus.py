@@ -1,13 +1,19 @@
 import torch
 import torch.nn as nn
-from networks.resnet import resnet18
+from networks.resnet import resnet18, resnet50_Head
+from networks.CSPDarknet import CSPDarknet
 from networks.modules import Conv, ResizeConv, DilateEncoder
 
 class CenterNetPlus(nn.Module):
-    def __init__(self, num_classes, weight_path=""):
+    def __init__(self, num_classes, backbone="r18", pretrained=True):
         super(CenterNetPlus, self).__init__()
         self.num_classes = num_classes
-        self.backbone = resnet18(weight_path=weight_path) 
+        if backbone == "r18":
+            self.backbone = resnet18(pretrained=pretrained)
+        elif backbone == "csp_s":
+            self.backbone = CSPDarknet(base_channels=32, base_depth=1, phi='s', pretrained=pretrained)
+        else:
+            raise ValueError("Undefined backbone!!")
         c2, c3, c4, c5 = 64, 128, 256, 512
         p2, p3, p4, p5 = 256, 256, 256, 256
         act = 'relu'
@@ -29,27 +35,11 @@ class CenterNetPlus(nn.Module):
         self.latter2 = Conv(c2, p2, k=1, act=None)
         self.smooth2 = Conv(p2, p2, k=3, p=1, act=act)
 
-        # detection head
-        self.cls_pred = nn.Sequential(
-            Conv(p2, 64, k=3, p=1, act=act),
-            nn.Conv2d(64, self.num_classes, kernel_size=1)
-        )
-
-        self.txty_pred = nn.Sequential(
-            Conv(p2, 64, k=3, p=1, act=act),
-            nn.Conv2d(64, 2, kernel_size=1)
-        )
-       
-        self.twth_pred = nn.Sequential(
-            Conv(p2, 64, k=3, p=1, act=act),
-            nn.Conv2d(64, 2, kernel_size=1)
-        )
+        self.head = resnet50_Head(num_classes=num_classes, channel=64)
+        self.head.cls_head[-1].weight.data.fill_(0)
+        self.head.cls_head[-1].bias.data.fill_(-2.19)
 
         # init weight of cls_pred
-        # init_prob = 0.01
-        # bias_value = -torch.log(torch.tensor((1. - init_prob) / init_prob))
-        # nn.init.constant_(self.cls_pred[-1].bias, bias_value)
-
     def forward(self, x):
         # backbone
         c2, c3, c4, c5 = self.backbone(x)
@@ -62,11 +52,7 @@ class CenterNetPlus(nn.Module):
         p2 = self.smooth2(self.latter2(c2) + self.deconv2(p3))
 
         # detection head
-        cls_pred = self.cls_pred(p2)
-        twth_pred = self.twth_pred(p2)
-        txty_pred = self.txty_pred(p2)
-
-        return cls_pred, twth_pred, txty_pred
+        return self.head(p2)
 
     def freeze_backbone(self):
         for param in self.backbone.parameters():

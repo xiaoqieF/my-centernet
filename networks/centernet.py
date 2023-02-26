@@ -38,14 +38,14 @@ class CenterNet(nn.Module):
         _1, _2, _3, feat = self.backbone(x)
         return self.head(self.decoder(feat))
 
-def centernet_resnet50(num_classes=20, backbone_weight_path=""):
-    return CenterNet(num_classes=num_classes, backbone=resnet50(weight_path=backbone_weight_path))
+def centernet_resnet50(num_classes=20, pretrained=False):
+    return CenterNet(num_classes=num_classes, backbone=resnet50(pretrained=pretrained))
 
-def centernet_darknet53(num_classes=20, backbone_weight_path=""):
-    return CenterNet(num_classes=num_classes, backbone=darknet53(weight_path=backbone_weight_path))
+def centernet_darknet53(num_classes=20, pretrained=False):
+    return CenterNet(num_classes=num_classes, backbone=darknet53(pretrained=pretrained))
 
-def centernet_resnet18(num_classes=20, backbone_weight_path=""):
-    return CenterNet(num_classes=num_classes, backbone=resnet18(weight_path=backbone_weight_path))
+def centernet_resnet18(num_classes=20, pretrained=False):
+    return CenterNet(num_classes=num_classes, backbone=resnet18(pretrained=pretrained))
 
 def centernet_yolos(num_classes=20, pretrained=True):
     depth_dict          = {'n': 0.33, 's' : 0.33, 'm' : 0.67, 'l' : 1.00, 'x' : 1.33,}

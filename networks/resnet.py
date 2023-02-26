@@ -135,32 +135,35 @@ class ResNet(nn.Module):
 
         return C_2, C_3, C_4, C_5
 
-def resnet18(weight_path=""):
+def resnet18(pretrained=True):
     #  'resnet18': 'https://download.pytorch.org/models/resnet18-5c106cde.pth'
     resnet_backbone = ResNet(BasicBlock, [2, 2, 2, 2])
 
-    if weight_path != "":
-        print(resnet_backbone.load_state_dict(torch.load(weight_path), strict=False))
+    if pretrained:
+        checkpoint = torch.hub.load_state_dict_from_url(url=model_urls["resnet18"], map_location="cpu", model_dir="./model_data")
+        resnet_backbone.load_state_dict(state_dict=checkpoint, strict=False)
     resnet_backbone.out_channels = 512
 
     return resnet_backbone
 
-def resnet34(weight_path=""):
+def resnet34(pretrained=True):
     # 'resnet34': 'https://download.pytorch.org/models/resnet34-333f7ec4.pth'
     resnet_backbone = ResNet(BasicBlock, [3, 4, 6, 3])
 
-    if weight_path != "":
-        print(resnet_backbone.load_state_dict(torch.load(weight_path), strict=False))
+    if pretrained:
+        checkpoint = torch.hub.load_state_dict_from_url(url=model_urls["resnet34"], map_location="cpu", model_dir="./model_data")
+        resnet_backbone.load_state_dict(state_dict=checkpoint, strict=False)
     resnet_backbone.out_channels = 512
 
     return resnet_backbone
 
-def resnet50(weight_path=""):
+def resnet50(pretrained=True):
     # 'resnet50': 'https://s3.amazonaws.com/pytorch/models/resnet50-19c8e357.pth'
     resnet_backbone = ResNet(Bottleneck, [3, 4, 6, 3])
 
-    if weight_path != "":
-        print(resnet_backbone.load_state_dict(torch.load(weight_path), strict=False))
+    if pretrained:
+        checkpoint = torch.hub.load_state_dict_from_url(url=model_urls["resnet50"], map_location="cpu", model_dir="./model_data")
+        resnet_backbone.load_state_dict(state_dict=checkpoint, strict=False)
     resnet_backbone.out_channels = 2048
 
     return resnet_backbone
@@ -217,7 +220,7 @@ class resnet50_Head(nn.Module):
         #-----------------------------------------------------------------#
         # 热力图预测部分
         self.cls_head = nn.Sequential(
-            nn.Conv2d(64, channel,
+            nn.Conv2d(256, channel,
                       kernel_size=3, padding=1, bias=False),
             nn.BatchNorm2d(64, momentum=bn_momentum),
             nn.ReLU(inplace=True),
@@ -225,7 +228,7 @@ class resnet50_Head(nn.Module):
                       kernel_size=1, stride=1, padding=0))
         # 宽高预测的部分
         self.wh_head = nn.Sequential(
-            nn.Conv2d(64, channel,
+            nn.Conv2d(256, channel,
                       kernel_size=3, padding=1, bias=False),
             nn.BatchNorm2d(64, momentum=bn_momentum),
             nn.ReLU(inplace=True),
@@ -234,7 +237,7 @@ class resnet50_Head(nn.Module):
 
         # 中心点预测的部分
         self.reg_head = nn.Sequential(
-            nn.Conv2d(64, channel,
+            nn.Conv2d(256, channel,
                       kernel_size=3, padding=1, bias=False),
             nn.BatchNorm2d(64, momentum=bn_momentum),
             nn.ReLU(inplace=True),

@@ -50,8 +50,9 @@ def warmup_lr_scheduler(optimizer, warmup_iters, warmup_factor):
     return optim.lr_scheduler.LambdaLR(optimizer, lr_lambda=f)
 
 if __name__ == '__main__':
-    model = centernet_yolos(num_classes=2, pretrained=True)
+    model = CenterNetPlus(num_classes=2, weight_path="")
     device = torch.device("cuda:0")
+    print(model)
 
     train_data = CenterNetDataset('./DroneBirds', isTrain=True, transform=DEFAULT_TRANSFORMS)
     train_dataloader = DataLoader(train_data, batch_size=16, shuffle=True, num_workers=6, collate_fn=train_data.collate_fn)
@@ -61,7 +62,7 @@ if __name__ == '__main__':
 
     init_lr = 0.01
     warm_up_epochs = 5
-    freeze_epoch = 30
+    freeze_epoch = 10
     total_epoch = 100
 
     # model.freeze_backbone()
