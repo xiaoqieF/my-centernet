@@ -17,9 +17,8 @@ def evaluate(model, dataloader, device, plot=False):
 
     stats = []
     for imgs, targets in tqdm.tqdm(dataloader, desc="Validating"):
-        imgs = imgs.to(device)
+        imgs = imgs.to(device).float() / 255
         targets = targets
-        targets[:, 2:] *= HYP.input_size[0]
 
         with torch.no_grad():
             outputs = model(imgs)
@@ -40,11 +39,11 @@ if __name__ == "__main__":
     device = torch.device("cuda:0")
 
     model = CenterNetPlus(num_classes=2)
-    model.load_state_dict(torch.load("./run/centernet_yolos_54.pth"))
+    model.load_state_dict(torch.load("./run/centernetplus_r18.pth"))
     model.to(device)
     model.eval()
 
-    dataset = CenterNetDataset('./DroneBirds', isTrain=False, transform=VAL_TRANSFORMS)
+    dataset = CenterNetDataset('./DroneBirds', isTrain=False, augment=False)
     dataloader = DataLoader(dataset, batch_size=1, shuffle=False, num_workers=4, collate_fn=dataset.collate_fn)
 
     evaluate(model, dataloader, device, plot=True)

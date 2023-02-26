@@ -39,7 +39,7 @@ if __name__ == '__main__':
     class_names = load_class_names("./DroneBirds/my_data_label.names")
     device = torch.device("cuda:0")
     model = CenterNetPlus(num_classes=2)
-    model.load_state_dict(torch.load("./run/centernet_yolos_54.pth"))
+    model.load_state_dict(torch.load("./run/centernetplus_r18.pth"))
     model.to(device)
     model.eval()
 

@@ -52,6 +52,9 @@ def gaussian_radius(det_size, min_overlap=0.7):
     return min(r1, r2, r3)
 
 def compute_loss(pred, targets):
+    """
+    targets: [batch_index, cls, x1, y1, x2, y2]
+    """
     hm, wh, offset = pred
     bs, class_num, feat_h, feat_w = hm.shape
     device = targets.device
@@ -64,8 +67,8 @@ def compute_loss(pred, targets):
     for i in range(bs):
         target = targets[targets[:, 0] == i]
         boxes = torch.zeros((target.shape[0], 4), device=device)
-        boxes[:, [0, 2]] = target[:, [2, 4]] * feat_h
-        boxes[:, [1, 3]] = target[:, [3, 5]] * feat_w
+        boxes[:, [0, 2]] = target[:, [2, 4]] / 4
+        boxes[:, [1, 3]] = target[:, [3, 5]] / 4
 
         for j in range(len(target)):
             cls_id = int(target[j, 1])
