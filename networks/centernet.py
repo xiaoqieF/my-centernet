@@ -19,7 +19,7 @@ class CenterNet(nn.Module):
         #                -> 128, 128, 64 -> 128, 128, 2
         #                -> 128, 128, 64 -> 128, 128, 2
         #-----------------------------------------------------------------#
-        self.head = resnet50_Head(channel=64, num_classes=num_classes)
+        self.head = resnet50_Head(in_channel=64, num_classes=num_classes)
         self._init_weights()
 
     def freeze_backbone(self):

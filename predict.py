@@ -7,7 +7,7 @@ import torchvision.transforms as transforms
 import cv2
 import numpy as np
 
-from networks.centernet import centernet_resnet18, centernet_darknet53
+from networks.centernet import centernet_resnet18, centernet_darknet53, centernet_resnet50
 from networks.centernetplus import CenterNetPlus
 from utils.boxes import decode_bbox, postprocess, correct_boxes
 from utils.draw_boxes_utils import draw_box
@@ -15,7 +15,7 @@ from utils.utils import load_class_names
 
 imgs_path = "./samples/imgs"
 video_path = "./samples/droneFly.mp4"
-mode = "video"    # image / video
+mode = "image"    # image / video
 
 #---------------------------------------------------#
 #   对输入图像进行resize
@@ -29,7 +29,7 @@ def resize_image(image, size, letterbox_image):
         nh      = int(ih*scale)
 
         image   = image.resize((nw,nh), Image.BICUBIC)
-        new_image = Image.new('RGB', size, (128, 128, 128))
+        new_image = Image.new('RGB', size, (144, 144, 144))
         new_image.paste(image, ((w-nw)//2, (h-nh)//2))
     else:
         new_image = image.resize((w, h), Image.BICUBIC)
@@ -38,8 +38,8 @@ def resize_image(image, size, letterbox_image):
 if __name__ == '__main__':
     class_names = load_class_names("./DroneBirds/my_data_label.names")
     device = torch.device("cuda:0")
-    model = CenterNetPlus(num_classes=2)
-    model.load_state_dict(torch.load("./run/centernetplus_r18.pth"))
+    model = centernet_resnet18(num_classes=2)
+    model.load_state_dict(torch.load("./run/centernet_r18_best.pth"))
     model.to(device)
     model.eval()
 
@@ -54,9 +54,8 @@ if __name__ == '__main__':
                 img = img.to(device)
                 t1 = time.time()
                 output = model(img)
-                output = decode_bbox(output[0], output[1], output[2], confidence=0.2)
-                output = output[0].cpu().numpy()
-                # output = postprocess(output)[0].numpy()
+                output = decode_bbox(output[0], output[1], output[2], confidence=0.4)
+                output = postprocess(output)[0].numpy()
 
                 output[:, 0:4] = correct_boxes(output[:, 0:4], (512, 512), img_origin.size)  # height, width
                 print(f"time: {time.time() - t1}")

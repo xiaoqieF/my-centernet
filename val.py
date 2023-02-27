@@ -4,7 +4,6 @@ from torch.utils.data import DataLoader
 from networks.centernet import centernet_resnet18, centernet_darknet53, centernet_resnet50
 from networks.centernetplus import CenterNetPlus
 from utils.dataset import CenterNetDataset
-from utils.transform import VAL_TRANSFORMS
 from utils.hyp import HYP
 from utils.boxes import decode_bbox, postprocess
 from utils.utils import load_class_names
@@ -38,8 +37,8 @@ def evaluate(model, dataloader, device, plot=False):
 if __name__ == "__main__":
     device = torch.device("cuda:0")
 
-    model = CenterNetPlus(num_classes=2)
-    model.load_state_dict(torch.load("./run/centernetplus_r18.pth"))
+    model = centernet_resnet18(num_classes=2)
+    model.load_state_dict(torch.load("./run/centernet_r18_best.pth"))
     model.to(device)
     model.eval()
 

@@ -5,7 +5,6 @@ from utils.boxes import decode_bbox, postprocess
 from torch.utils.data import DataLoader
 import torch
 from utils.draw_boxes_utils import draw_box
-from utils.transform import VAL_TRANSFORMS
 from utils.utils import load_class_names
 import torchvision
 import matplotlib.pyplot as plt
@@ -13,17 +12,17 @@ import matplotlib.pyplot as plt
 if __name__ == '__main__':
     device = torch.device("cuda:0")
     model = CenterNetPlus(num_classes=2, backbone="r18")
-    model.load_state_dict(torch.load("./run/centernet_yolos_54.pth"))
+    model.load_state_dict(torch.load("./run/centernetplus_r18_95.pth"))
     model.to(device)
     model.eval()
 
-    data = CenterNetDataset("./DroneBirds", isTrain=False, transform=VAL_TRANSFORMS)
-    dataloader = DataLoader(data, batch_size=1, shuffle=False, num_workers=4, collate_fn=data.collate_fn)
+    data = CenterNetDataset("./DroneBirds", isTrain=False, augment=False)
+    dataloader = DataLoader(data, batch_size=1, shuffle=True, num_workers=4, collate_fn=data.collate_fn)
     class_names = load_class_names("./DroneBirds/my_data_label.names")
 
     with torch.no_grad():
         for imgs, targets in dataloader:
-            imgs = imgs.to(device)
+            imgs = imgs.to(device).float() / 255
             targets = targets.to(device)
 
             outputs = model(imgs)

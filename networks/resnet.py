@@ -210,7 +210,7 @@ class resnet50_Decoder(nn.Module):
 
 
 class resnet50_Head(nn.Module):
-    def __init__(self, num_classes=20, channel=64, bn_momentum=0.1):
+    def __init__(self, num_classes=20, in_channel=256, bn_momentum=0.1):
         super(resnet50_Head, self).__init__()
         #-----------------------------------------------------------------#
         #   对获取到的特征进行上采样，进行分类预测和回归预测
@@ -220,28 +220,28 @@ class resnet50_Head(nn.Module):
         #-----------------------------------------------------------------#
         # 热力图预测部分
         self.cls_head = nn.Sequential(
-            nn.Conv2d(256, channel,
+            nn.Conv2d(in_channel, 64,
                       kernel_size=3, padding=1, bias=False),
             nn.BatchNorm2d(64, momentum=bn_momentum),
             nn.ReLU(inplace=True),
-            nn.Conv2d(channel, num_classes,
+            nn.Conv2d(64, num_classes,
                       kernel_size=1, stride=1, padding=0))
         # 宽高预测的部分
         self.wh_head = nn.Sequential(
-            nn.Conv2d(256, channel,
+            nn.Conv2d(in_channel, 64,
                       kernel_size=3, padding=1, bias=False),
             nn.BatchNorm2d(64, momentum=bn_momentum),
             nn.ReLU(inplace=True),
-            nn.Conv2d(channel, 2,
+            nn.Conv2d(64, 2,
                       kernel_size=1, stride=1, padding=0))
 
         # 中心点预测的部分
         self.reg_head = nn.Sequential(
-            nn.Conv2d(256, channel,
+            nn.Conv2d(in_channel, 64,
                       kernel_size=3, padding=1, bias=False),
             nn.BatchNorm2d(64, momentum=bn_momentum),
             nn.ReLU(inplace=True),
-            nn.Conv2d(channel, 2,
+            nn.Conv2d(64, 2,
                       kernel_size=1, stride=1, padding=0))
 
     def forward(self, x):
