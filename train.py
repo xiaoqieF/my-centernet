@@ -35,7 +35,7 @@ def train_one_epoch(model, epoch, train_loader, optimizer, device):
 
         if (i + 1) % 50 == 0:
             print(f"Train epoch[{epoch}]: [{i}/{len(train_loader)}], total loss: {loss.item()} lr:{get_lr(optimizer):.5}")
-    torch.save(model.state_dict(), f"./run/centernetplus_r50_{str(epoch)}.pth")
+    torch.save(model.state_dict(), f"./run/centernetplus_r18sppf_{str(epoch)}.pth")
     writer.add_scalar("train loss", total_loss / len(train_loader), epoch)
     writer.add_scalar("lr", get_lr(optimizer), epoch)
 
@@ -51,7 +51,7 @@ def warmup_lr_scheduler(optimizer, warmup_iters, warmup_factor):
     return optim.lr_scheduler.LambdaLR(optimizer, lr_lambda=f)
 
 if __name__ == '__main__':
-    model = CenterNetPlus(num_classes=2, backbone="r50", pretrained=True)
+    model = CenterNetPlus(num_classes=2, backbone="r18", pretrained=True)
     device = torch.device("cuda:0")
 
     model.to(device)
@@ -61,10 +61,10 @@ if __name__ == '__main__':
     print(summary(model, (3, 512, 512)))
 
     train_data = CenterNetDataset('./DroneBirds', isTrain=True, augment=True)
-    train_dataloader = DataLoader(train_data, batch_size=16, shuffle=True, num_workers=8, collate_fn=train_data.collate_fn)
+    train_dataloader = DataLoader(train_data, batch_size=32, shuffle=True, num_workers=6, collate_fn=train_data.collate_fn)
 
     eval_data = CenterNetDataset('./DroneBirds', isTrain=False, augment=False)
-    eval_dataloader = DataLoader(eval_data, batch_size=1, shuffle=False, num_workers=8, collate_fn=eval_data.collate_fn)
+    eval_dataloader = DataLoader(eval_data, batch_size=1, shuffle=False, num_workers=6, collate_fn=eval_data.collate_fn)
 
     init_lr = 0.01
     warm_up_epochs = 5

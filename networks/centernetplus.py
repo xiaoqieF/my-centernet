@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 from networks.resnet import resnet18, resnet50_Head, resnet50
-from networks.CSPDarknet import CSPDarknet
+from networks.CSPDarknet import CSPDarknet, SPPF
 from networks.modules import Conv, ResizeConv, DilateEncoder
 
 class CenterNetPlus(nn.Module):
@@ -29,7 +29,7 @@ class CenterNetPlus(nn.Module):
 
         # neck
         # # dilate encoder
-        self.neck = DilateEncoder(c1=c5, c2=p5, act=act)
+        self.neck = SPPF(c1=c5, c2=p5)
 
         # upsample
         self.deconv4 = ResizeConv(c1=p5, c2=p4, act=act, scale_factor=2) # 32 -> 16
