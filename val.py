@@ -12,7 +12,7 @@ import tqdm
 def evaluate(model, dataloader, device, plot=False):
     model.to(device)
     model.eval()
-    class_names = load_class_names("./DroneBirds/my_data_label.names")
+    class_names = load_class_names("./my_yolo_dataset/my_data_label.names")
 
     stats = []
     for imgs, targets in tqdm.tqdm(dataloader, desc="Validating"):
@@ -37,12 +37,12 @@ def evaluate(model, dataloader, device, plot=False):
 if __name__ == "__main__":
     device = torch.device("cuda:0")
 
-    model = centernet_resnet18(num_classes=2)
-    model.load_state_dict(torch.load("./run/centernet_r18_best.pth"))
+    model = CenterNetPlus(num_classes=1, backbone="r18")
+    model.load_state_dict(torch.load("./run/1centernetplus_r18_99.pth"), strict=False)
     model.to(device)
     model.eval()
 
-    dataset = CenterNetDataset('./DroneBirds', isTrain=False, augment=False)
+    dataset = CenterNetDataset('./DroneVsBirds', isTrain=False, augment=False)
     dataloader = DataLoader(dataset, batch_size=1, shuffle=False, num_workers=4, collate_fn=dataset.collate_fn)
 
     evaluate(model, dataloader, device, plot=True)

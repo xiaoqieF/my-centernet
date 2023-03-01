@@ -84,9 +84,9 @@ class Darknet(nn.Module):
             layers.append((f"residual_{i}", ResidualBlock(self.inplanes, planes)))
         return nn.Sequential(OrderedDict(layers))
 
-def darknet53(weight_path=""):
+def darknet53(pretrained=True):
     model = Darknet([1, 2, 8, 8, 4])
-    if weight_path != "":
-        model.load_state_dict(torch.load(weight_path))
+    if pretrained:
+        model.load_state_dict(torch.load("./model_data/darknet53.pth"))
     model.out_channels = 1024
     return model

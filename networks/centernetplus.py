@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 from networks.resnet import resnet18, resnet50_Head, resnet50
 from networks.CSPDarknet import CSPDarknet, SPPF
-from networks.modules import Conv, ResizeConv, DilateEncoder
+from networks.modules import Conv, ResizeConv
 
 class CenterNetPlus(nn.Module):
     def __init__(self, num_classes, backbone="r18", pretrained=True):

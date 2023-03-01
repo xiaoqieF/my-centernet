@@ -15,7 +15,7 @@ from utils.utils import load_class_names
 
 imgs_path = "./samples/imgs"
 video_path = "./samples/droneFly.mp4"
-mode = "image"    # image / video
+mode = "video"    # image / video
 
 #---------------------------------------------------#
 #   对输入图像进行resize
@@ -38,8 +38,8 @@ def resize_image(image, size, letterbox_image):
 if __name__ == '__main__':
     class_names = load_class_names("./DroneBirds/my_data_label.names")
     device = torch.device("cuda:0")
-    model = centernet_resnet18(num_classes=2)
-    model.load_state_dict(torch.load("./run/centernet_r18_best.pth"))
+    model = CenterNetPlus(num_classes=1, backbone="r18")
+    model.load_state_dict(torch.load("./run/1centernetplus_r18_99.pth"), strict=False)
     model.to(device)
     model.eval()
 
@@ -83,7 +83,7 @@ if __name__ == '__main__':
                 img = transforms.ToTensor()(img).unsqueeze(0)
                 img = img.to(device)
                 output = model(img)
-                output = decode_bbox(output[0], output[1], output[2], confidence=0.2)
+                output = decode_bbox(output[0], output[1], output[2], confidence=0.4)
                 output = postprocess(output)[0].numpy()
 
                 output[:, 0:4] = correct_boxes(output[:, 0:4], (512, 512), size)  # height, width

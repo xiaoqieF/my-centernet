@@ -11,7 +11,7 @@ import shutil
 
 
 # voc数据集根目录以及版本
-voc_root = "./data/VOCdevkit"
+voc_root = "./VOCdevkit"
 voc_version = "VOC2012"
 
 # 转换的训练集以及验证集对应txt文件
@@ -22,7 +22,7 @@ val_txt = "val.txt"
 save_file_root = "./my_yolo_dataset"
 
 # label标签对应json文件
-label_json_path = './data/pascal_voc_classes.json'
+label_json_path = './pascal_voc_classes.json'
 
 # 拼接出voc的images目录，xml目录，txt目录
 voc_images_path = os.path.join(voc_root, voc_version, "JPEGImages")
@@ -147,7 +147,7 @@ def translate_info(file_names: list, save_root: str, class_dict: dict, train_val
 
 def create_class_names(class_dict: dict):
     keys = class_dict.keys()
-    with open("./data/my_data_label.names", "w") as w:
+    with open("./my_data_label.names", "w") as w:
         for index, k in enumerate(keys):
             if index + 1 == len(keys):
                 w.write(k)
