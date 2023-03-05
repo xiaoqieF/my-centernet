@@ -3,7 +3,6 @@ from torch import optim
 from torch.utils.data import DataLoader
 from torch.utils.tensorboard import SummaryWriter
 from torchsummary import summary
-from thop import profile
 import os
 
 from networks.centernet import centernet_resnet50, centernet_resnet18, centernet_darknet53, centernet_yolos
@@ -36,7 +35,7 @@ def train_one_epoch(model, epoch, train_loader, optimizer, device):
 
         if (i + 1) % 50 == 0:
             print(f"Train epoch[{epoch}]: [{i}/{len(train_loader)}], total loss: {loss.item()} lr:{get_lr(optimizer):.5}")
-    torch.save(model.state_dict(), f"./run/20centernetplus_r18_{str(epoch)}.pth")
+    torch.save(model.state_dict(), f"./run/20centernetplus_csps_{str(epoch)}.pth")
     writer.add_scalar("train loss", total_loss / len(train_loader), epoch)
     writer.add_scalar("lr", get_lr(optimizer), epoch)
 
@@ -52,7 +51,7 @@ def warmup_lr_scheduler(optimizer, warmup_iters, warmup_factor):
     return optim.lr_scheduler.LambdaLR(optimizer, lr_lambda=f)
 
 if __name__ == '__main__':
-    model = CenterNetPlus(num_classes=20, backbone="r18", pretrained=True)
+    model = CenterNetPlus(num_classes=20, backbone="csp_s", pretrained=True)
     device = torch.device("cuda:0")
 
     test_input = torch.randn((1, 3, 512, 512), device=device)
@@ -63,21 +62,24 @@ if __name__ == '__main__':
 
     print(summary(model, (3, 512, 512)))
 
-    flops, params = profile(model, inputs=(test_input, ))
-    print(f"Model params: {params}, {flops / 1E9} GFlops")
+    cal_flops = False
+    if cal_flops:
+        from thop import profile
+        flops, params = profile(model, inputs=(test_input, ))
+        print(f"Model params: {params}, {flops / 1E9} GFlops")
 
     train_data = CenterNetDataset('./my_yolo_dataset', isTrain=True, augment=True)
-    train_dataloader = DataLoader(train_data, batch_size=32, shuffle=True, num_workers=6, collate_fn=train_data.collate_fn)
+    train_dataloader = DataLoader(train_data, batch_size=32, shuffle=True, num_workers=8, collate_fn=train_data.collate_fn)
 
     eval_data = CenterNetDataset('./my_yolo_dataset', isTrain=False, augment=False)
-    eval_dataloader = DataLoader(eval_data, batch_size=1, shuffle=False, num_workers=6, collate_fn=eval_data.collate_fn)
+    eval_dataloader = DataLoader(eval_data, batch_size=1, shuffle=False, num_workers=8, collate_fn=eval_data.collate_fn)
 
     init_lr = 0.01
     warm_up_epochs = 5
     freeze_epoch = 20
     total_epoch = 100
 
-    model.freeze_backbone()
+    # model.freeze_backbone()
 
     params = [p for p in model.parameters() if p.requires_grad]
     optimizer = torch.optim.SGD(params, lr=init_lr, momentum=0.9, weight_decay=0.0005)

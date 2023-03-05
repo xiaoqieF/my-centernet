@@ -11,14 +11,14 @@ import matplotlib.pyplot as plt
 
 if __name__ == '__main__':
     device = torch.device("cuda:0")
-    model = CenterNetPlus(num_classes=2, backbone="r18")
-    model.load_state_dict(torch.load("./run/centernetplus_r18_95.pth"))
+    model = CenterNetPlus(num_classes=20, backbone="r50")
+    model.load_state_dict(torch.load("./run/20centernetplus_r50_best.pth"), strict=False)
     model.to(device)
     model.eval()
 
-    data = CenterNetDataset("./DroneBirds", isTrain=False, augment=False)
+    data = CenterNetDataset("./my_yolo_dataset", isTrain=False, augment=False)
     dataloader = DataLoader(data, batch_size=1, shuffle=True, num_workers=4, collate_fn=data.collate_fn)
-    class_names = load_class_names("./DroneBirds/my_data_label.names")
+    class_names = load_class_names("./my_yolo_dataset/my_data_label.names")
 
     with torch.no_grad():
         for imgs, targets in dataloader:
