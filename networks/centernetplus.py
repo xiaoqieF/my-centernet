@@ -3,6 +3,7 @@ import torch.nn as nn
 from networks.resnet import resnet18, resnet50_Head, resnet50
 from networks.CSPDarknet import CSPDarknet, SPPF
 from networks.modules import Conv, ResizeConv
+from networks.smallbackbone import MobileNetv2
 
 class CenterNetPlus(nn.Module):
     def __init__(self, num_classes, backbone="r18", pretrained=True):
@@ -11,17 +12,22 @@ class CenterNetPlus(nn.Module):
         if backbone == "r18":
             self.backbone = resnet18(pretrained=pretrained)
             c2, c3, c4, c5 = 64, 128, 256, 512
-            p2, p3, p4, p5 = 256, 256, 256, 256
+            p2, p3, p4, p5 = 128, 128, 128, 128
             act = 'relu'
         elif backbone == "csp_s":
             self.backbone = CSPDarknet(base_channels=32, base_depth=1, phi='s', pretrained=pretrained)
             c2, c3, c4, c5 = 64, 128, 256, 512
-            p2, p3, p4, p5 = 256, 256, 256, 256
+            p2, p3, p4, p5 = 128, 128, 128, 128
             act = 'relu'
         elif backbone == "r50":
             self.backbone = resnet50(pretrained=pretrained)
             c2, c3, c4, c5 = 256, 512, 1024, 2048
-            p2, p3, p4, p5 = 256, 256, 256, 256
+            p2, p3, p4, p5 = 128, 128, 128, 128
+            act = 'relu'
+        elif backbone == "mobile":
+            self.backbone = MobileNetv2(pretrained=pretrained)
+            c2, c3, c4, c5 = 24, 32, 96, 1280
+            p2, p3, p4, p5 = 128, 128, 128, 128
             act = 'relu'
         else:
             raise ValueError("Undefined backbone!!")
@@ -44,7 +50,7 @@ class CenterNetPlus(nn.Module):
         self.latter2 = Conv(c2, p2, k=1, act=None)
         self.smooth2 = Conv(p2, p2, k=3, p=1, act=act)
 
-        self.head = resnet50_Head(num_classes=num_classes, in_channel=256)
+        self.head = resnet50_Head(num_classes=num_classes, in_channel=128)
         self.head.cls_head[-1].weight.data.fill_(0)
         self.head.cls_head[-1].bias.data.fill_(-2.19)
 

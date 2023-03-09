@@ -1,5 +1,7 @@
 import torch
 import numpy as np
+import thop
+from copy import deepcopy
 
 def load_class_names(path):
     class_names = None
@@ -81,3 +83,23 @@ def xyxy2xywhn(x, w=640, h=640, clip=False, eps=0.0):
     y[..., 2] = (x[..., 2] - x[..., 0]) / w  # width
     y[..., 3] = (x[..., 3] - x[..., 1]) / h  # height
     return y
+
+def model_info(model, verbose=False, imgsz=512):
+    # Model information. img_size may be int or list, i.e. img_size=640 or img_size=[640, 320]
+    n_p = sum(x.numel() for x in model.parameters())  # number parameters
+    n_g = sum(x.numel() for x in model.parameters() if x.requires_grad)  # number gradients
+    if verbose:
+        print(f"{'layer':>5} {'name':>40} {'gradient':>9} {'parameters':>12} {'shape':>20} {'mu':>10} {'sigma':>10}")
+        for i, (name, p) in enumerate(model.named_parameters()):
+            name = name.replace('module_list.', '')
+            print('%5g %40s %9s %12g %20s %10.3g %10.3g' %
+                  (i, name, p.requires_grad, p.numel(), list(p.shape), p.mean(), p.std()))
+
+    try:  # FLOPs
+        p = next(model.parameters())
+        im = torch.empty((1, p.shape[1], imgsz, imgsz), device=p.device)  # input image in BCHW format
+        flops = thop.profile(deepcopy(model), inputs=(im,), verbose=False)[0] / 1E9 # stride GFLOPs
+    except Exception:
+        flops = ''
+
+    print(f'summary: {len(list(model.modules()))} layers, {n_p} parameters, {n_g} gradients, {flops}GFLOPs')

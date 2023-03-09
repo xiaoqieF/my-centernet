@@ -1,10 +1,9 @@
 from utils.metrics import *
 import torch
 from torch.utils.data import DataLoader
-from networks.centernet import centernet_resnet18, centernet_darknet53, centernet_resnet50
 from networks.centernetplus import CenterNetPlus
+from networks.centernet import CenterNet
 from utils.dataset import CenterNetDataset
-from utils.hyp import HYP
 from utils.boxes import decode_bbox, postprocess
 from utils.utils import load_class_names
 import tqdm
@@ -17,6 +16,7 @@ def evaluate(model, dataloader, device, plot=False):
     stats = []
     for imgs, targets in tqdm.tqdm(dataloader, desc="Validating"):
         imgs = imgs.to(device).float() / 255
+
         targets = targets
 
         with torch.no_grad():
@@ -37,8 +37,8 @@ def evaluate(model, dataloader, device, plot=False):
 if __name__ == "__main__":
     device = torch.device("cuda:0")
 
-    model = CenterNetPlus(num_classes=20, backbone="r50")
-    model.load_state_dict(torch.load("./run/20centernetplus_r50_best.pth"), strict=False)
+    model = CenterNet(num_classes=20, backbone="r50")
+    model.load_state_dict(torch.load("./run/c.pth"), strict=False)
     model.to(device)
     model.eval()
 

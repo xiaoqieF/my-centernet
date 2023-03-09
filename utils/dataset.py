@@ -64,7 +64,7 @@ class CenterNetDataset(Dataset):
             img, labels = new["image"], np.array([[c, *b] for c, b in zip(new['class_labels'], new['bboxes'])])
 
             # HSV color-space
-            augment_hsv(img, hgain=0.015, sgain=0.7, vgain=0.4)
+            augment_hsv(img, hgain=0.1, sgain=0.7, vgain=0.4)
 
         # 第一个位置放当前图片在 batch 中的索引(在collate_fn中实现)
         nl = len(labels)
@@ -162,7 +162,7 @@ if __name__ == '__main__':
     import torchvision
     import matplotlib.pyplot as plt
     from draw_boxes_utils import draw_objs
-    data = CenterNetDataset('./DroneVsBirds', isTrain=True, augment=True)
+    data = CenterNetDataset('./my_yolo_dataset', isTrain=True, augment=True)
     dataloader = DataLoader(data, 4, False, num_workers=4, collate_fn=data.collate_fn)
 
     for img, target in data:

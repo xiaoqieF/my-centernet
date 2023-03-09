@@ -89,9 +89,7 @@ def compute_loss(pred, targets):
     wh_loss = 0.1 * reg_l1_loss(wh, targets_wh, targets_reg_mask)
     off_loss = reg_l1_loss(offset, targets_reg, targets_reg_mask)
 
-    loss = c_loss + wh_loss + off_loss
-
-    return loss
+    return c_loss, wh_loss, off_loss
 
 
 def focal_loss(pred, target):
