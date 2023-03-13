@@ -9,3 +9,5 @@ samples/
 DroneBirds/
 model_data/
 DroneVsBirds/
+nohup.out
+wandb/

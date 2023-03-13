@@ -8,10 +8,10 @@ from utils.boxes import decode_bbox, postprocess
 from utils.utils import load_class_names
 import tqdm
 
-def evaluate(model, dataloader, device, plot=False):
+def evaluate(model, dataloader, device, label_path, plot=False):
     model.to(device)
     model.eval()
-    class_names = load_class_names("./my_yolo_dataset/my_data_label.names")
+    class_names = load_class_names(label_path)
 
     stats = []
     for imgs, targets in tqdm.tqdm(dataloader, desc="Validating"):
@@ -37,8 +37,8 @@ def evaluate(model, dataloader, device, plot=False):
 if __name__ == "__main__":
     device = torch.device("cuda:0")
 
-    model = CenterNet(num_classes=20, backbone="r50")
-    model.load_state_dict(torch.load("./run/c.pth"), strict=False)
+    model = CenterNetPlus(num_classes=20, backbone="r50")
+    model.load_state_dict(torch.load("./run/20centernetplus_r50_best.pth"), strict=False)
     model.to(device)
     model.eval()
 

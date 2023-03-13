@@ -1,4 +1,3 @@
-from networks.centernet import centernet_resnet18, centernet_darknet53
 from networks.centernetplus import CenterNetPlus
 from utils.dataset import CenterNetDataset
 from utils.boxes import decode_bbox, postprocess
