@@ -12,13 +12,19 @@ import functools
 import cv2
 from PIL import Image
 import numpy as np
+import time
+from utils.dataset import LoadStream, LoadVideo
 
 
 if __name__ == "__main__":
-    sample_img = "./samples/imgs/333.jpg"
-    a = cv2.imread(sample_img)
-    a = a.transpose((2, 0, 1))[::-1]
-    b = Image.open(sample_img)
-    b_1 = np.transpose(np.array(b, dtype=np.float32), (2, 0, 1))
-    print(a)
-    print(b_1)
+    video_path = './samples/111.mp4'
+    video_stream = LoadVideo(video_path)
+    for frame_idx, (path, img, im0s) in enumerate(video_stream):
+        cv2.imshow('video', img)
+        print(video_stream.frame)
+        if cv2.waitKey(1) == ord('q'):
+            cv2.destroyAllWindows()
+        time.sleep(0.01)
+        img = torch.from_numpy(img)
+        img = img.float() / 255
+        img = img.unsqueeze(0)

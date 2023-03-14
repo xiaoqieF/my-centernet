@@ -7,7 +7,6 @@ import torchvision.transforms as transforms
 import cv2
 import numpy as np
 
-from networks.centernet import centernet_resnet18, centernet_darknet53, centernet_resnet50
 from networks.centernetplus import CenterNetPlus
 from utils.boxes import decode_bbox, postprocess, correct_boxes
 from utils.draw_boxes_utils import draw_box

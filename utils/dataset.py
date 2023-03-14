@@ -7,10 +7,13 @@ import cv2
 
 import math
 import random
+from threading import Thread
 
 from utils.utils import xywhn2xyxy
 from utils.augmentations import random_perspective, augment_hsv, letterbox, DEFAULT_TRANSFORMS
 
+IMG_FORMATS = 'bmp', 'dng', 'jpeg', 'jpg', 'mpo', 'png', 'tif', 'tiff', 'webp', 'pfm'  # include image suffixes
+VID_FORMATS = 'asf', 'avi', 'gif', 'm4v', 'mkv', 'mov', 'mp4', 'mpeg', 'mpg', 'ts', 'wmv'  # include video suffixes
 
 class CenterNetDataset(Dataset):
     def __init__(self, data_root, img_size=512, isTrain=True, augment=False):
@@ -157,6 +160,99 @@ class CenterNetDataset(Dataset):
 
         return imgs, targets
 
+
+class LoadStream:
+    """
+    网络/摄像头 dataloader
+    """
+    def __init__(self, source='file.stream', img_size=512, vid_stride=1):
+        torch.backends.cudnn.benchmark = True
+        self.mode = 'stream'
+        self.img_size = img_size
+        self.vid_stride = vid_stride
+        self.current_img, self.fps, self.frames, self.thread = None, 0, 0, None
+        self.source = eval(source) if source.isnumeric() else source
+
+        cap = cv2.VideoCapture(self.source)
+        assert cap.isOpened(), f"Failed to open {self.source}"
+        w = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+        h = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+        fps = cap.get(cv2.CAP_PROP_FPS)
+        self.frames = max(int(cap.get(cv2.CAP_PROP_FRAME_COUNT)), 0) or float('inf')
+        self.fps = max((fps if math.isfinite(fps) else 0) % 100, 0) or 30
+        _, self.current_img = cap.read()
+        self.thread = Thread(target=self.update, args=[cap, self.source], daemon=True)
+        self.thread.start()
+
+    def update(self, cap, stream):
+        """
+        不断从 stream 中读取下一帧, 每隔 self.vid_stride 帧将其存入 self.current_img 中
+        保证当前存的是摄像头中最新的图片
+        """
+        n = 0
+        while cap.isOpened() and n < self.frames:
+            n += 1
+            cap.grab()
+            if n % self.vid_stride == 0:
+                success, im = cap.retrieve()
+                if success:
+                    self.current_img = im
+                else:
+                    print('WARNING Video stream unresponsive, please check your IP camera connection.')
+                    self.current_img = np.zeros_like(self.current_img)
+                    cap.open(stream)
+
+    def __iter__(self):
+        self.count = -1
+        return self 
+    
+    def __next__(self):
+        self.count += 1
+        if not self.thread.is_alive() or cv2.waitKey(1) == ord('q'):
+            cv2.destroyAllWindows()
+            raise StopIteration
+        
+        im0 = self.current_img.copy()
+        im = letterbox(im0, self.img_size, auto=False)[0]
+        im = im.transpose((2, 0, 1))[::-1]
+        im = np.ascontiguousarray(im)
+
+        return self.source, im, im0
+
+class LoadVideo:
+    """
+    video dataloader
+    """
+    def __init__(self, path, img_size=512, vid_stride=1):
+        assert(os.path.isfile(path)), f"path: {path} is not an exist file"
+        assert(path.split('.')[-1].lower() in VID_FORMATS)
+        
+        self.path = path
+        self.img_size = img_size
+        self.vid_stride = vid_stride
+        self.cap = cv2.VideoCapture(path)
+        self.frame = 0
+        self.frames = int(self.cap.get(cv2.CAP_PROP_FRAME_COUNT) / self.vid_stride)
+
+    def __iter__(self):
+        self.count = 0
+        return self
+    
+    def __next__(self):
+        for _ in range(self.vid_stride):
+            self.cap.grab()
+        ret_val, im0 = self.cap.retrieve()
+        while not ret_val:
+            self.count += 1
+            self.cap.release()
+            raise StopIteration
+        self.frame += 1
+
+        im = letterbox(im0, self.img_size, auto=False)[0]
+        im = im.transpose((2, 0, 1))[::-1]
+        im = np.ascontiguousarray(im)
+        
+        return self.path, im, im0
 
 if __name__ == '__main__':
     import torchvision
