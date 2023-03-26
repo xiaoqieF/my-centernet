@@ -2,6 +2,7 @@ import torch
 import numpy as np
 import thop
 from copy import deepcopy
+import time
 
 def load_class_names(path):
     class_names = None
@@ -103,3 +104,24 @@ def model_info(model, verbose=False, imgsz=512):
         flops = ''
 
     print(f'summary: {len(list(model.modules()))} layers, {n_p} parameters, {n_g} gradients, {flops}GFLOPs')
+
+def time_sync():
+    # PyTorch-accurate time
+    if torch.cuda.is_available():
+        torch.cuda.synchronize()
+    return time.time()
+
+def scale_boxes(img1_shape, boxes, img0_shape, ratio_pad=None):
+    # Rescale boxes (xyxy) from img1_shape to img0_shape
+    if ratio_pad is None:  # calculate from img0_shape
+        gain = min(img1_shape[0] / img0_shape[0], img1_shape[1] / img0_shape[1])  # gain  = old / new
+        pad = (img1_shape[1] - img0_shape[1] * gain) / 2, (img1_shape[0] - img0_shape[0] * gain) / 2  # wh padding
+    else:
+        gain = ratio_pad[0][0]
+        pad = ratio_pad[1]
+
+    boxes[..., [0, 2]] -= pad[0]  # x padding
+    boxes[..., [1, 3]] -= pad[1]  # y padding
+    boxes[..., :4] /= gain
+    clip_boxes(boxes, img0_shape)
+    return boxes
