@@ -69,6 +69,7 @@ def compute_loss(pred, targets):
         boxes = torch.zeros((target.shape[0], 4), device=device)
         boxes[:, [0, 2]] = target[:, [2, 4]] / 4
         boxes[:, [1, 3]] = target[:, [3, 5]] / 4
+        boxes[:, :4] = torch.clamp(boxes[:, :4], 0, 127)   # 防止 ct_int == 128
 
         for j in range(len(target)):
             cls_id = int(target[j, 1])

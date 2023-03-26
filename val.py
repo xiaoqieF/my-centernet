@@ -4,7 +4,7 @@ from torch.utils.data import DataLoader
 from networks.centernetplus import CenterNetPlus
 from networks.centernet import CenterNet
 from utils.dataset import CenterNetDataset
-from utils.boxes import decode_bbox, postprocess
+from utils.boxes import postprocess, BBoxDecoder
 from utils.utils import load_class_names
 import tqdm
 
@@ -21,7 +21,7 @@ def evaluate(model, dataloader, device, label_path, plot=False):
 
         with torch.no_grad():
             outputs = model(imgs)
-            outputs = decode_bbox(outputs[0], outputs[1], outputs[2], 0.02)
+            outputs = BBoxDecoder.decode_bbox(outputs[0], outputs[1], outputs[2], 0.02)
             outputs = [o.cpu() for o in outputs]
 
             outputs = postprocess(outputs, nms_thres=0.4)
@@ -45,4 +45,4 @@ if __name__ == "__main__":
     dataset = CenterNetDataset('./my_yolo_dataset', isTrain=False, augment=False)
     dataloader = DataLoader(dataset, batch_size=1, shuffle=False, num_workers=4, collate_fn=dataset.collate_fn)
 
-    evaluate(model, dataloader, device, plot=True)
+    evaluate(model, dataloader, device, label_path='./my_yolo_dataset/my_data_label.names', plot=True)

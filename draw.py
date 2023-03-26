@@ -1,6 +1,6 @@
 from networks.centernetplus import CenterNetPlus
 from utils.dataset import CenterNetDataset
-from utils.boxes import decode_bbox, postprocess
+from utils.boxes import postprocess, BBoxDecoder
 from torch.utils.data import DataLoader
 import torch
 from utils.draw_boxes_utils import draw_box
@@ -25,7 +25,7 @@ if __name__ == '__main__':
             targets = targets.to(device)
 
             outputs = model(imgs)
-            outputs = decode_bbox(outputs[0], outputs[1], outputs[2], confidence=0.3)
+            outputs = BBoxDecoder.decode_bbox(outputs[0], outputs[1], outputs[2], confidence=0.3)
             outputs = postprocess(outputs)[0]
 
             print(f"predictions: {outputs}")

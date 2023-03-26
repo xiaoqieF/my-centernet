@@ -71,9 +71,9 @@ def main():
                         help='batch size for trainning, default:64')
     parser.add_argument('--epochs', type=int, default=200, 
                         help='num of epochs to train, default:200')
-    parser.add_argument('--num-classes', type=int, default=2,
+    parser.add_argument('--num-classes', type=int, default=20,
                         help='num of classes')
-    parser.add_argument('--dataset', type=str, default='./DroneBirds',
+    parser.add_argument('--dataset', type=str, default='./my_yolo_dataset',
                         help='path of dataset')
     parser.add_argument('--num-workers', type=int, default=8,
                         help='num of workers to load data')
@@ -81,9 +81,9 @@ def main():
                         help='learning rate, default: 0.01')
     parser.add_argument('--momentum', type=float, default=0.9,
                         help='momentum for sgd, default: 0.9')
-    parser.add_argument('--warmup-epochs', type=int, default=5,
+    parser.add_argument('--warmup-epochs', type=int, default=20,
                         help='num epochs for warmup, default: 5')
-    parser.add_argument('--model', type=str, default='centernet',
+    parser.add_argument('--model', type=str, default='centernetplus',
                         help='choose model, [centernet] or [centernetplus]')
     parser.add_argument('--backbone', type=str, default='r18',
                         help='backbone of model')
