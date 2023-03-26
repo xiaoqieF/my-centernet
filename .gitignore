@@ -11,3 +11,4 @@ model_data/
 DroneVsBirds/
 nohup.out
 wandb/
+*.log
