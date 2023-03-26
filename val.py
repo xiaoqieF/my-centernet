@@ -37,8 +37,8 @@ def evaluate(model, dataloader, device, label_path, plot=False):
 if __name__ == "__main__":
     device = torch.device("cuda:0")
 
-    model = CenterNetPlus(num_classes=20, backbone="r50")
-    model.load_state_dict(torch.load("./run/20centernetplus_r50_best.pth"), strict=False)
+    model = CenterNetPlus(num_classes=20, backbone="r18")
+    model.load_state_dict(torch.load("./run/my_yolo_dataset_centernetplus_r18_best.pth"), strict=False)
     model.to(device)
     model.eval()
 

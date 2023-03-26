@@ -12,7 +12,7 @@ def pool_nms(heat, kernel = 3):
 
 class BBoxDecoder:
     hm_height, hm_width = 128, 128
-    yv, xv = torch.meshgrid(torch.arange(0, hm_height), torch.arange(0, hm_width))
+    yv, xv = torch.meshgrid(torch.arange(0, hm_height), torch.arange(0, hm_width), indexing='ij')
     xv, yv = xv.flatten().float().cuda(), yv.flatten().float().cuda()
     
     def decode_bbox(pred_hms, pred_whs, pred_offsets, confidence):
