@@ -71,9 +71,9 @@ def main():
                         help='batch size for trainning, default:64')
     parser.add_argument('--epochs', type=int, default=200, 
                         help='num of epochs to train, default:200')
-    parser.add_argument('--num-classes', type=int, default=20,
+    parser.add_argument('--num-classes', type=int, default=1,
                         help='num of classes')
-    parser.add_argument('--dataset', type=str, default='./my_yolo_dataset',
+    parser.add_argument('--dataset', type=str, default='./DroneVsBirds',
                         help='path of dataset')
     parser.add_argument('--num-workers', type=int, default=8,
                         help='num of workers to load data')

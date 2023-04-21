@@ -13,8 +13,8 @@ from utils.draw_boxes_utils import draw_box
 from utils.utils import load_class_names
 
 imgs_path = "./samples/imgs"
-video_path = "./samples/111.mp4"
-mode = "image"    # image / video
+video_path = "./samples/1.mp4"
+mode = "video"    # image / video
 
 #---------------------------------------------------#
 #   对输入图像进行resize
@@ -35,10 +35,10 @@ def resize_image(image, size, letterbox_image):
     return new_image
 
 if __name__ == '__main__':
-    class_names = load_class_names("./my_yolo_dataset/my_data_label.names")
+    class_names = load_class_names("./DroneVsBirds/my_data_label.names")
     device = torch.device("cuda:0")
-    model = CenterNetPlus(num_classes=20, backbone="r50")
-    model.load_state_dict(torch.load("./run/20centernetplus_r50_best.pth"), strict=False)
+    model = CenterNetPlus(num_classes=1, backbone="r18")
+    model.load_state_dict(torch.load("./run/DroneVsBirds_centernetplus_r18_best.pth"), strict=False)
     model.to(device)
     model.eval()
 
@@ -53,7 +53,7 @@ if __name__ == '__main__':
                 img = img.to(device)
                 t1 = time.time()
                 output = model(img)
-                output = BBoxDecoder.decode_bbox(output[0], output[1], output[2], confidence=0.4)
+                output = BBoxDecoder.decode_bbox(output[0], output[1], output[2], confidence=0.3)
                 output = postprocess(output)[0].numpy()
 
                 output[:, 0:4] = correct_boxes(output[:, 0:4], (512, 512), img_origin.size)  # height, width
