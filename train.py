@@ -67,13 +67,13 @@ def main():
     wandb.init(project="my-centernet")
 
     parser = argparse.ArgumentParser(description='my-centernet')
-    parser.add_argument('--batch-size', type=int, default=64,
+    parser.add_argument('--batch-size', type=int, default=32,
                         help='batch size for trainning, default:64')
     parser.add_argument('--epochs', type=int, default=200, 
                         help='num of epochs to train, default:200')
-    parser.add_argument('--num-classes', type=int, default=1,
+    parser.add_argument('--num-classes', type=int, default=20,
                         help='num of classes')
-    parser.add_argument('--dataset', type=str, default='./DroneVsBirds',
+    parser.add_argument('--dataset', type=str, default='./my_yolo_dataset',
                         help='path of dataset')
     parser.add_argument('--num-workers', type=int, default=8,
                         help='num of workers to load data')
@@ -85,7 +85,7 @@ def main():
                         help='num epochs for warmup, default: 5')
     parser.add_argument('--model', type=str, default='centernetplus',
                         help='choose model, [centernet] or [centernetplus]')
-    parser.add_argument('--backbone', type=str, default='r18',
+    parser.add_argument('--backbone', type=str, default='mobilev3',
                         help='backbone of model')
     args = parser.parse_args()
     wandb.config.update(args)

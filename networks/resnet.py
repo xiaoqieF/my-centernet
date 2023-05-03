@@ -168,6 +168,17 @@ def resnet50(pretrained=True):
 
     return resnet_backbone
 
+def resnet101(pretrained=True):
+    # 'resnet101': 'https://download.pytorch.org/models/resnet101-5d3b4d8f.pth'
+    resnet_backbone = ResNet(Bottleneck, [3, 4, 23, 3])
+
+    if pretrained:
+        checkpoint = torch.hub.load_state_dict_from_url(url=model_urls["resnet101"], map_location="cpu", model_dir="./model_data")
+        resnet_backbone.load_state_dict(state_dict=checkpoint, strict=False)
+    resnet_backbone.out_channels = 2048
+
+    return resnet_backbone
+
 class resnet50_Decoder(nn.Module):
     def __init__(self, inplanes, bn_momentum=0.1):
         super(resnet50_Decoder, self).__init__()

@@ -1,9 +1,9 @@
 import torch
 import torch.nn as nn
-from networks.resnet import resnet18, resnet50_Head, resnet50
+from networks.resnet import resnet18, resnet50_Head, resnet50, resnet101
 from networks.CSPDarknet import CSPDarknet, SPPF
 from networks.modules import Conv, ResizeConv
-from networks.smallbackbone import MobileNetv2
+from networks.smallbackbone import MobileNetv2, MobileNetv3
 
 class CenterNetPlus(nn.Module):
     def __init__(self, num_classes, backbone="r18", pretrained=True):
@@ -24,9 +24,19 @@ class CenterNetPlus(nn.Module):
             c2, c3, c4, c5 = 256, 512, 1024, 2048
             p2, p3, p4, p5 = 128, 128, 128, 128
             act = 'relu'
+        elif backbone == "r101":
+            self.backbone = resnet101(pretrained=pretrained)
+            c2, c3, c4, c5 = 256, 512, 1024, 2048
+            p2, p3, p4, p5 = 128, 128, 128, 128
+            act = 'relu'
         elif backbone == "mobile":
             self.backbone = MobileNetv2(pretrained=pretrained)
             c2, c3, c4, c5 = 24, 32, 96, 1280
+            p2, p3, p4, p5 = 128, 128, 128, 128
+            act = 'relu'
+        elif backbone == "mobilev3":
+            self.backbone = MobileNetv3(pretrained=pretrained)
+            c2, c3, c4, c5 = 24, 40, 112, 960
             p2, p3, p4, p5 = 128, 128, 128, 128
             act = 'relu'
         else:
