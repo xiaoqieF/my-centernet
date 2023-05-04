@@ -262,5 +262,5 @@ class resnet50_Head(nn.Module):
         return hm, wh, offset
 
 if __name__ == '__main__':
-    net = resnet18()
+    net = resnet101()
     print(net)

@@ -1,9 +1,10 @@
 import torch.nn as nn
-from .resnet import resnet50, resnet18, resnet50_Decoder, resnet50_Head
+from .resnet import resnet50, resnet18, resnet101, resnet50_Decoder, resnet50_Head
 from .CSPDarknet import CSPDarknet
 from .darknet import darknet53
 import torch.nn.functional as F
 import torch
+from networks.smallbackbone import MobileNetv2, MobileNetv3
 
 
 class CenterNet(nn.Module):
@@ -14,8 +15,14 @@ class CenterNet(nn.Module):
             self.backbone = resnet18(pretrained=pretrained)
         elif backbone == "r50":
             self.backbone = resnet50(pretrained=pretrained)
+        elif backbone == "r101":
+            self.backbone = resnet101(pretrained=pretrained)
         elif backbone == "dark53":
             self.backbone = darknet53(pretrained=pretrained)
+        elif backbone == "mobile":
+            self.backbone = MobileNetv2(pretrained=pretrained)
+        elif backbone == "mobilev3":
+            self.backbone = MobileNetv3(pretrained=pretrained)
         else:
             raise ValueError("unknow backbone")
         # 16,16,N -> 128,128,64

@@ -71,9 +71,9 @@ def main():
                         help='batch size for trainning, default:64')
     parser.add_argument('--epochs', type=int, default=200, 
                         help='num of epochs to train, default:200')
-    parser.add_argument('--num-classes', type=int, default=20,
+    parser.add_argument('--num-classes', type=int, default=2,
                         help='num of classes')
-    parser.add_argument('--dataset', type=str, default='./my_yolo_dataset',
+    parser.add_argument('--dataset', type=str, default='./DroneBirds',
                         help='path of dataset')
     parser.add_argument('--num-workers', type=int, default=8,
                         help='num of workers to load data')
@@ -85,7 +85,7 @@ def main():
                         help='num epochs for warmup, default: 5')
     parser.add_argument('--model', type=str, default='centernetplus',
                         help='choose model, [centernet] or [centernetplus]')
-    parser.add_argument('--backbone', type=str, default='mobilev3',
+    parser.add_argument('--backbone', type=str, default='mobile',
                         help='backbone of model')
     args = parser.parse_args()
     wandb.config.update(args)

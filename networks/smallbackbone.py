@@ -13,6 +13,7 @@ class MobileNetv2(nn.Module):
                         "features.13": "2",
                         "features.18": '3'}
         self.mm = create_feature_extractor(m, return_layer)
+        self.out_channels = 1280
 
     def forward(self, x):
         out = self.mm(x)
@@ -22,13 +23,13 @@ class MobileNetv3(nn.Module):
     def __init__(self, pretrained=False):
         super().__init__()
         m = torchvision.models.mobilenet_v3_large(pretrained=pretrained)
-        print(m)
         return_layer = {
             "features.3": "0",
             "features.6": "1",
             "features.12": "2",
             "features.16": "3",
         }
+        self.out_channels = 960
         
         self.mm = create_feature_extractor(m, return_layer)
 
