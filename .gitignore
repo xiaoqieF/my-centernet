@@ -12,3 +12,4 @@ DroneVsBirds/
 nohup.out
 wandb/
 *.log
+*.onnx

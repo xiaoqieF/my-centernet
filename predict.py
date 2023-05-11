@@ -13,7 +13,7 @@ from utils.draw_boxes_utils import draw_box
 from utils.utils import load_class_names
 
 imgs_path = "./samples/imgs"
-video_path = "./samples/1.mp4"
+video_path = "./samples/DroneVsBirds_2.mp4"
 mode = "video"    # image / video
 
 #---------------------------------------------------#
@@ -35,10 +35,10 @@ def resize_image(image, size, letterbox_image):
     return new_image
 
 if __name__ == '__main__':
-    class_names = load_class_names("./DroneBirds/my_data_label.names")
+    class_names = load_class_names("./DroneVsBirds/my_data_label.names")
     device = torch.device("cuda:0")
-    model = CenterNetPlus(num_classes=2, backbone="r18")
-    model.load_state_dict(torch.load("./run/DroneBirds_centernetplus_r18_best.pth"), strict=False)
+    model = CenterNetPlus(num_classes=1, backbone="r18")
+    model.load_state_dict(torch.load("./run/DroneVsBirds_centernetplus_r18_best.pth"), strict=False)
     model.to(device)
     model.eval()
 
