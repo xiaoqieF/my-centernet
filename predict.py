@@ -14,7 +14,7 @@ from utils.utils import load_class_names
 
 imgs_path = "./samples/imgs"
 video_path = "./samples/DroneVsBirds_2.mp4"
-mode = "video"    # image / video
+mode = "image"    # image / video
 
 #---------------------------------------------------#
 #   对输入图像进行resize
@@ -53,11 +53,11 @@ if __name__ == '__main__':
                 img = img.to(device)
                 t1 = time.time()
                 output = model(img)
+                print(f"time: {time.time() - t1}")
                 output = BBoxDecoder.decode_bbox(output[0], output[1], output[2], confidence=0.3)
                 output = postprocess(output)[0].numpy()
 
                 output[:, 0:4] = correct_boxes(output[:, 0:4], (512, 512), img_origin.size)  # height, width
-                print(f"time: {time.time() - t1}")
                 # print(f"predictions: {output}")
 
                 img = draw_box(img_origin, output[:, :4], output[:, -1], output[:, 4], class_names)

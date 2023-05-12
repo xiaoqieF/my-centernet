@@ -1,4 +1,4 @@
-from PIL.Image import Image
+from PIL import Image
 import PIL.ImageDraw as ImageDraw
 import PIL.ImageFont as ImageFont
 import numpy as np
