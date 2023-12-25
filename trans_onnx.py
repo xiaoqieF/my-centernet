@@ -10,12 +10,13 @@ import matplotlib.pyplot as plt
 import time
 
 from networks.centernetplus import CenterNetPlus
+from networks.centernet import CenterNet
 from utils.augmentations import letterbox
 from utils.boxes import postprocess, correct_boxes, BBoxDecoder
 from utils.draw_boxes_utils import draw_box
 from utils.utils import load_class_names
 
-image_path = './samples/imgs/111.jpeg'
+image_path = './samples/imgs1/gopro_006_500.jpg'
 
 model_path='DroneVsBirds_centernetplus_r18.onnx'
 engine_file_path = "DroneVsBirds_centernetplus_r18.trt"
@@ -78,12 +79,12 @@ def trans2trt():
 
 
 def trans2onnx():
-    model = CenterNetPlus(num_classes=1, backbone="r18")
-    model.load_state_dict(torch.load("./run/DroneVsBirds_centernetplus_r18_best.pth"), strict=False)
+    model = CenterNet(num_classes=1, backbone="r50")
+    model.load_state_dict(torch.load("./run/DroneVsBirds_centernet_r50_best.pth"), strict=False)
     model.eval()
 
     x = torch.randn(1, 3, 512, 512)
-    export_onnx_file = "DroneVsBirds_centernetplus_r18.onnx"
+    export_onnx_file = "DroneVsBirds_centernet_r50.onnx"
     torch.onnx.export(model, x, export_onnx_file, export_params=True, input_names=['input'], output_names=['output0', 'output1', 'output2'])
 
 # 对 onnx 模型使用 onnxruntime 进行推理
@@ -103,45 +104,46 @@ def inference():
     print(outputs)
 
 if __name__ == '__main__':
-    engine = trans2trt()
-    context = engine.create_execution_context()
-    bindings = OrderedDict()
-    output_names = []   
-    for i in range(engine.num_bindings):
-        name = engine.get_tensor_name(i) # 获得输入输出的名字"images","output0"
-        dtype = trt.nptype(engine.get_tensor_dtype(name))
-        if engine.binding_is_input(i):  # 判断是否为输入
-            if -1 in tuple(engine.get_tensor_shape(name)):  # dynamic get_binding_shape(0)->(1,3,640,640) get_binding_shape(1)->(1,25200,85)
-                dynamic = True
-                context.set_binding_shape(i, tuple(engine.get_profile_shape(0, i)[2]))
-            if dtype == np.float16:
-                fp16 = True
-        else:  # output
-            output_names.append(name)  # 放入输出名字 output_names = ['output0']
-        shape = tuple(context.get_tensor_shape(name))  # 记录输入输出shape
-        im = torch.from_numpy(np.empty(shape, dtype=dtype)).cuda()  # 创建一个全0的与输入或输出shape相同的tensor
-        bindings[name] = [dtype, shape, im, int(im.data_ptr())]  # 放入之前创建的对象中   [dtype, shape, data, data_address]
+    trans2onnx()
+    # engine = trans2trt()
+    # context = engine.create_execution_context()
+    # bindings = OrderedDict()
+    # output_names = []   
+    # for i in range(engine.num_bindings):
+    #     name = engine.get_tensor_name(i) # 获得输入输出的名字"images","output0"
+    #     dtype = trt.nptype(engine.get_tensor_dtype(name))
+    #     if engine.binding_is_input(i):  # 判断是否为输入
+    #         if -1 in tuple(engine.get_tensor_shape(name)):  # dynamic get_binding_shape(0)->(1,3,640,640) get_binding_shape(1)->(1,25200,85)
+    #             dynamic = True
+    #             context.set_binding_shape(i, tuple(engine.get_profile_shape(0, i)[2]))
+    #         if dtype == np.float16:
+    #             fp16 = True
+    #     else:  # output
+    #         output_names.append(name)  # 放入输出名字 output_names = ['output0']
+    #     shape = tuple(context.get_tensor_shape(name))  # 记录输入输出shape
+    #     im = torch.from_numpy(np.empty(shape, dtype=dtype)).cuda()  # 创建一个全0的与输入或输出shape相同的tensor
+    #     bindings[name] = [dtype, shape, im, int(im.data_ptr())]  # 放入之前创建的对象中   [dtype, shape, data, data_address]
 
-    for i in range(5):
-        img_origin = cv2.imread(image_path)
-        img = letterbox(img_origin, (512, 512), auto=False)[0]
-        img = img.transpose((2, 0, 1))[::-1]  # HWC to CHW, BGR to RGB
-        img = np.ascontiguousarray(img).astype(np.float32) / 255.0
-        img = np.expand_dims(img, 0)
-        bindings['input'][2] = torch.from_numpy(img).cuda()
-        bindings['input'][3] = bindings['input'][2].data_ptr()
-        buffer = [d[3] for d in bindings.values()]   # cuda 变量地址，用于 tensorrt 推理
-        t1 = time.time()
-        context.execute_v2(buffer)
-        print(f"time: {time.time() - t1}")
-        output = [bindings['output0'][2], bindings['output1'][2], bindings['output2'][2]]
-        output = BBoxDecoder.decode_bbox(output[0], output[1], output[2], confidence=0.3)
-        output = postprocess(output)[0].numpy()
+    # for i in range(5):
+    #     img_origin = cv2.imread(image_path)
+    #     img = letterbox(img_origin, (512, 512), auto=False)[0]
+    #     img = img.transpose((2, 0, 1))[::-1]  # HWC to CHW, BGR to RGB
+    #     img = np.ascontiguousarray(img).astype(np.float32) / 255.0
+    #     img = np.expand_dims(img, 0)
+    #     bindings['input'][2] = torch.from_numpy(img).cuda()
+    #     bindings['input'][3] = bindings['input'][2].data_ptr()
+    #     buffer = [d[3] for d in bindings.values()]   # cuda 变量地址，用于 tensorrt 推理
+    #     t1 = time.time()
+    #     context.execute_v2(buffer)
+    #     print(f"time: {time.time() - t1}")
+    #     output = [bindings['output0'][2], bindings['output1'][2], bindings['output2'][2]]
+    #     output = BBoxDecoder.decode_bbox(output[0], output[1], output[2], confidence=0.3)
+    #     output = postprocess(output)[0].numpy()
 
-        output[:, 0:4] = correct_boxes(output[:, 0:4], (512, 512), (img_origin.shape[1], img_origin.shape[0]))  # height, width
-        # print(f"predictions: {output}")
+    #     output[:, 0:4] = correct_boxes(output[:, 0:4], (512, 512), (img_origin.shape[1], img_origin.shape[0]))  # height, width
+    #     # print(f"predictions: {output}")
 
-        class_names = load_class_names("./DroneVsBirds/my_data_label.names")
-        img = draw_box(img_origin, output[:, :4], output[:, -1], output[:, 4], class_names)
-        plt.imshow(img)
-        plt.show()
+    #     class_names = load_class_names("./DroneVsBirds/my_data_label.names")
+    #     img = draw_box(img_origin, output[:, :4], output[:, -1], output[:, 4], class_names)
+    #     plt.imshow(img)
+    #     plt.show()

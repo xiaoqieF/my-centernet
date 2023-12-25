@@ -8,11 +8,12 @@ import cv2
 import numpy as np
 
 from networks.centernetplus import CenterNetPlus
+from networks.centernet import CenterNet
 from utils.boxes import postprocess, correct_boxes, BBoxDecoder
 from utils.draw_boxes_utils import draw_box
 from utils.utils import load_class_names
 
-imgs_path = "./samples/imgs"
+imgs_path = "./samples/imgs1"
 video_path = "./samples/DroneVsBirds_2.mp4"
 mode = "image"    # image / video
 
@@ -37,8 +38,8 @@ def resize_image(image, size, letterbox_image):
 if __name__ == '__main__':
     class_names = load_class_names("./DroneVsBirds/my_data_label.names")
     device = torch.device("cuda:0")
-    model = CenterNetPlus(num_classes=1, backbone="r18")
-    model.load_state_dict(torch.load("./run/DroneVsBirds_centernetplus_r18_best.pth"), strict=False)
+    model = CenterNet(num_classes=1, backbone="r18")
+    model.load_state_dict(torch.load("./run/DroneVsBirds_centernet_r18_best.pth"), strict=False)
     model.to(device)
     model.eval()
 

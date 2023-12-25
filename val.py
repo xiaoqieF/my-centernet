@@ -37,12 +37,12 @@ def evaluate(model, dataloader, device, label_path, plot=False):
 if __name__ == "__main__":
     device = torch.device("cuda:0")
 
-    model = CenterNetPlus(num_classes=1, backbone="r18")
-    model.load_state_dict(torch.load("./run/DroneVsBirds_centernetplus_r18_best.pth"), strict=False)
+    model = CenterNetPlus(num_classes=2, backbone="r18")
+    model.load_state_dict(torch.load("./run/DroneBirds_centernetplus_r18_best.pth"), strict=False)
     model.to(device)
     model.eval()
 
     dataset = CenterNetDataset('./DroneVsBirds', isTrain=False, augment=False)
     dataloader = DataLoader(dataset, batch_size=1, shuffle=False, num_workers=4, collate_fn=dataset.collate_fn)
 
-    evaluate(model, dataloader, device, label_path='./DroneVsBirds/my_data_label.names', plot=True)
+    evaluate(model, dataloader, device, label_path='./DroneVsBirds/my_data_label.names', plot=False)

@@ -9,6 +9,7 @@ samples/
 DroneBirds/
 model_data/
 DroneVsBirds/
+DroneDet/
 nohup.out
 wandb/
 *.log

@@ -258,7 +258,7 @@ if __name__ == '__main__':
     import torchvision
     import matplotlib.pyplot as plt
     from draw_boxes_utils import draw_objs
-    data = CenterNetDataset('./DroneVsBirds', isTrain=True, augment=False)
+    data = CenterNetDataset('./DroneBirds', isTrain=True, augment=True)
     dataloader = DataLoader(data, 4, False, num_workers=4, collate_fn=data.collate_fn)
     
     for img, target in data:

@@ -193,7 +193,7 @@ class resnet50_Decoder(nn.Module):
         #----------------------------------------------------------#
         self.deconv_layers = self._make_deconv_layer(
             num_layers=3,
-            num_filters=[256, 128, 64],
+            num_filters=[512, 512, 64],
             num_kernels=[4, 4, 4],
         )
 

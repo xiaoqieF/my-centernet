@@ -51,7 +51,7 @@ def filter_low_thresh(boxes, scores, classes, category_index, thresh, box_to_dis
 
 def draw_text(draw, box_to_display_str_map, box, left, right, top, bottom, color):
     try:
-        font = ImageFont.truetype('arial.ttf', 20)
+        font = ImageFont.truetype('arial.ttf', 30)
     except IOError:
         font = ImageFont.load_default()
 
@@ -105,7 +105,7 @@ def draw_objs(image: Image,
               category_index: dict = None,
               box_thresh: float = 0.1,
               line_thick: int = 3,
-              font: str = 'nakula.ttf',
+              font: str = 'Gargi.ttf',
               font_size: int = 12,
               draw_boxes_on_image: bool = True):
     idxs = np.greater(scores, box_thresh)
@@ -120,9 +120,9 @@ def draw_objs(image: Image,
         for box, score in zip(boxes, scores):
             left, top, right, bottom = box
             draw.rectangle([(left, top), (right, bottom)], width=line_thick, outline="red")
-            text = f"test"
+            text = f"drone"
             text_width, text_height = font.getsize(text)
-            margin = np.ceil(0.05 * text_width)
-            draw.rectangle([(left, top), (left + text_width + 2 * margin, top + text_height)], fill='blue')
-            draw.text((left + margin, top), text, fill="white", font=font)
+            margin = np.ceil(0.05 * text_height)
+            # draw.rectangle([(left, top), (left + text_width + margin, top + text_height)], fill='skyblue')
+            # draw.text((left, top), text, fill="white", font=font)
     return image
